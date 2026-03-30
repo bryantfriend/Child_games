@@ -305,6 +305,19 @@ h2 {
   transform: translateY(-4px) scale(1.01);
 }
 
+.locked-island {
+  opacity: 0.55;
+  filter: grayscale(0.2);
+}
+
+.locked-island::before {
+  content: "🔒";
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 1.3rem;
+}
+
 .island-computer { background: linear-gradient(180deg, #3b82f6, #1e40af); }
 .island-input { background: linear-gradient(180deg, #2ec27e, #167d54); }
 .island-output { background: linear-gradient(180deg, #ff8e3c, #db5e1d); }
@@ -386,6 +399,81 @@ h2 {
   max-width: 720px;
   position: relative;
   z-index: 1;
+}
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.mini-game-grid {
+  grid-template-columns: repeat(4, minmax(100px, 1fr));
+}
+
+.emoji-choice {
+  min-height: 132px;
+  border: 0;
+  border-radius: 28px;
+  background: linear-gradient(180deg, #fff8d8, #ffe08a);
+  box-shadow: 0 14px 22px rgba(23, 64, 102, 0.12);
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  padding: 12px;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.emoji-choice:hover,
+.emoji-choice:focus-visible {
+  transform: translateY(-4px) scale(1.03);
+}
+
+.emoji-face,
+.target-emoji {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.mindful-bubble {
+  position: relative;
+  width: 210px;
+  height: 210px;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+}
+
+.bubble-ring,
+.bubble-core {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.bubble-ring {
+  inset: 0;
+  border: 10px solid rgba(76, 201, 240, 0.35);
+  animation: breatheRing 3s ease-in-out infinite;
+}
+
+.bubble-core {
+  inset: 28px;
+  background: radial-gradient(circle at top left, #ffffff, #bfeeff);
+  display: grid;
+  place-items: center;
+  font-size: 4rem;
+  box-shadow: inset 0 0 0 4px rgba(255,255,255,0.75);
+  animation: breatheCore 3s ease-in-out infinite;
+}
+
+.calm-button {
+  max-width: 260px;
+  margin: 0 auto;
 }
 
 .welcome-card strong {
@@ -890,6 +978,16 @@ h2 {
   50% { transform: scale(1.2) rotate(10deg); opacity: 1; }
 }
 
+@keyframes breatheRing {
+  0%, 100% { transform: scale(0.85); opacity: 0.5; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes breatheCore {
+  0%, 100% { transform: scale(0.95); }
+  50% { transform: scale(1.06); }
+}
+
 @media (max-width: 980px) {
   .game-layout,
   .build-layout,
@@ -929,7 +1027,9 @@ h2 {
   .sort-zones,
   .drop-zone-grid,
   .choice-pair,
-  .challenge-grid {
+  .challenge-grid,
+  .emoji-grid,
+  .mini-game-grid {
     grid-template-columns: 1fr;
   }
 

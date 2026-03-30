@@ -9,6 +9,13 @@ const state = {
   output: {},
   challenge: {},
   sillyTaps: 0,
+  checkIn: {
+    mood: null,
+    path: "pick",
+    emojiRound: 0,
+    calmStep: 0,
+    ready: false,
+  },
 };
 
 const games = {
@@ -38,7 +45,7 @@ const buildParts = [
   { id: "monitor", label: "Monitor", emoji: "🖥️", hint: "Shows pictures", zone: "monitor" },
   { id: "keyboard", label: "Keyboard", emoji: "⌨️", hint: "Helps you type", zone: "keyboard" },
   { id: "mouse", label: "Mouse", emoji: "🖱️", hint: "Moves and clicks", zone: "mouse" },
-  { id: "system", label: "System Unit", emoji: "🧰", hint: "Runs the computer", zone: "system" },
+  { id: "system", label: "Computer", emoji: "🧰", hint: "Runs the computer", zone: "system" },
 ];
 
 const buildFunctions = [
@@ -52,7 +59,7 @@ const buildPrompts = [
   { clue: "Tap the part we use to TYPE.", answer: "keyboard" },
   { clue: "Tap the part that SHOWS the work.", answer: "monitor" },
   { clue: "Tap the part that MOVES the arrow.", answer: "mouse" },
-  { clue: "Tap the part that is the computer's BRAIN.", answer: "system" },
+  { clue: "Tap the COMPUTER.", answer: "system" },
   { clue: "Tap the part you usually look AT.", answer: "monitor" },
 ];
 
@@ -121,6 +128,28 @@ const challengeTargets = [
   { id: "wait", label: "Wait!", emoji: "✋" },
 ];
 
+const moodChoices = [
+  { id: "happy", emoji: "😄", label: "Happy", path: "emoji" },
+  { id: "excited", emoji: "🤩", label: "Excited", path: "emoji" },
+  { id: "okay", emoji: "🙂", label: "Okay", path: "emoji" },
+  { id: "sleepy", emoji: "😴", label: "Sleepy", path: "mindful" },
+  { id: "sad", emoji: "😢", label: "Sad", path: "mindful" },
+  { id: "angry", emoji: "😠", label: "Angry", path: "mindful" },
+];
+
+const emojiGameRounds = [
+  { target: "😄", options: ["😄", "😎", "😆", "🥳"] },
+  { target: "🤩", options: ["🤩", "😴", "😊", "🥰"] },
+  { target: "🥳", options: ["🥳", "😢", "😄", "😮"] },
+];
+
+const calmSteps = [
+  { title: "Smell the flower", emoji: "🌸", text: "Breathe in slow." },
+  { title: "Blow the candle", emoji: "🕯️", text: "Breathe out slow." },
+  { title: "Stretch your arms", emoji: "👐", text: "Reach up high." },
+  { title: "Shake it out", emoji: "✨", text: "Tiny wiggle shake." },
+];
+
 const sillyMessages = [
   "Boing! Silly tap!",
   "Splash! A funny fish!",
@@ -151,25 +180,109 @@ updateRenderHooks();
 function renderWelcome() {
   state.currentGame = null;
   panelTitle.textContent = "Welcome, explorer!";
-  panelSubtitle.textContent = "Tap an island. Play. Learn.";
+  panelSubtitle.textContent =
+    state.checkIn.path === "pick" ? "First, choose a face." :
+    state.checkIn.path === "emoji" ? "Face game time." :
+    state.checkIn.path === "mindful" ? "Calm body. Calm mind." :
+    "You are ready to start.";
+  setIslandAccess();
+
+  if (state.checkIn.path === "pick") {
+    gameArea.innerHTML = `
+      <div class="welcome-card">
+        <div class="welcome-stack">
+          <strong>😊</strong>
+          <h3>How are you?</h3>
+          <p class="hero-text">Tap the face that feels right.</p>
+          <div class="emoji-grid">
+            ${moodChoices.map((mood) => `
+              <button class="emoji-choice" type="button" data-mood="${mood.id}">
+                <span class="emoji-face">${mood.emoji}</span>
+                <span>${mood.label}</span>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      </div>
+    `;
+    bindMoodChoices();
+    return;
+  }
+
+  if (state.checkIn.path === "emoji") {
+    const round = emojiGameRounds[state.checkIn.emojiRound];
+    gameArea.innerHTML = `
+      <div class="welcome-card">
+        <div class="welcome-stack">
+          <strong>${state.checkIn.mood ? moodChoices.find((m) => m.id === state.checkIn.mood)?.emoji : "😄"}</strong>
+          <h3>Emoji Game</h3>
+          <p class="hero-text">Tap this face: <span class="target-emoji">${round.target}</span></p>
+          <div class="emoji-grid mini-game-grid">
+            ${shuffleArray([...round.options]).map((emoji) => `
+              <button class="emoji-choice emoji-target" type="button" data-emoji-game="${emoji}">
+                <span class="emoji-face">${emoji}</span>
+              </button>
+            `).join("")}
+          </div>
+          <div class="lesson-plan">
+            <div class="lesson-chip">Round ${state.checkIn.emojiRound + 1} / ${emojiGameRounds.length}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    bindEmojiGame();
+    return;
+  }
+
+  if (state.checkIn.path === "mindful") {
+    const step = calmSteps[state.checkIn.calmStep];
+    gameArea.innerHTML = `
+      <div class="welcome-card">
+        <div class="welcome-stack">
+          <strong>${step.emoji}</strong>
+          <h3>Calm Time</h3>
+          <p class="hero-text">${step.title}</p>
+          <div class="mindful-bubble">
+            <div class="bubble-ring"></div>
+            <div class="bubble-core">${step.emoji}</div>
+          </div>
+          <p class="question-text">${step.text}</p>
+          <button class="big-choice input-choice calm-button" type="button" id="calmNextBtn">Done</button>
+          <div class="lesson-plan">
+            <div class="lesson-chip">Step ${state.checkIn.calmStep + 1} / ${calmSteps.length}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.getElementById("calmNextBtn")?.addEventListener("click", handleCalmStep);
+    return;
+  }
+
   gameArea.innerHTML = `
     <div class="welcome-card">
       <div class="welcome-stack">
         <strong>🌴</strong>
         <h3>Adventure Map Ready</h3>
-        <p class="hero-text">Big buttons. Easy words. Lots of play.</p>
+        <p class="hero-text">Nice job. Now pick an island.</p>
         <div class="lesson-plan">
           <div class="lesson-chip">Build</div>
           <div class="lesson-chip">Sort</div>
           <div class="lesson-chip">Choose</div>
           <div class="lesson-chip">Teacher Says</div>
         </div>
+        <button class="big-choice output-choice calm-button" type="button" id="startLessonBtn">Start Lesson</button>
       </div>
     </div>
   `;
+  document.getElementById("startLessonBtn")?.addEventListener("click", () => showFeedback("Pick an island to play!", "success"));
 }
 
 function openGame(type) {
+  if (!state.checkIn.ready) {
+    renderWelcome();
+    showFeedback("Pick a face first.", "info");
+    return;
+  }
   state.currentGame = type;
   panelTitle.textContent = games[type].title;
   panelSubtitle.textContent = `${games[type].subtitle} Estimated time: ${games[type].duration}.`;
@@ -633,6 +746,70 @@ function bindSharedButtons() {
   });
 }
 
+function setIslandAccess() {
+  const locked = !state.checkIn.ready;
+  document.querySelectorAll(".island-card").forEach((button) => {
+    button.disabled = locked;
+    button.classList.toggle("locked-island", locked);
+  });
+}
+
+function bindMoodChoices() {
+  gameArea.querySelectorAll("[data-mood]").forEach((button) => {
+    button.addEventListener("click", () => handleMoodChoice(button.dataset.mood));
+  });
+}
+
+function handleMoodChoice(moodId) {
+  const mood = moodChoices.find((entry) => entry.id === moodId);
+  state.checkIn.mood = mood.id;
+  state.checkIn.emojiRound = 0;
+  state.checkIn.calmStep = 0;
+  state.checkIn.path = mood.path;
+  showFeedback(mood.path === "emoji" ? "Let’s play a face game!" : "Let’s get calm first.", "info");
+  renderWelcome();
+  updateRenderHooks();
+}
+
+function bindEmojiGame() {
+  gameArea.querySelectorAll("[data-emoji-game]").forEach((button) => {
+    button.addEventListener("click", () => handleEmojiGame(button.dataset.emojiGame));
+  });
+}
+
+function handleEmojiGame(choice) {
+  const round = emojiGameRounds[state.checkIn.emojiRound];
+  if (choice === round.target) {
+    bumpStars(1);
+    showFeedback("Yes! Nice face!", "success");
+    state.checkIn.emojiRound += 1;
+    if (state.checkIn.emojiRound >= emojiGameRounds.length) {
+      state.checkIn.path = "done";
+      state.checkIn.ready = true;
+      spawnConfetti(28, false);
+      showFeedback("You are ready to learn!", "success");
+    }
+  } else {
+    showFeedback("Try again!", "error");
+  }
+  renderWelcome();
+  updateRenderHooks();
+}
+
+function handleCalmStep() {
+  bumpStars(1);
+  showFeedback("Good calm job.", "success");
+  state.checkIn.calmStep += 1;
+  if (state.checkIn.calmStep >= calmSteps.length) {
+    state.checkIn.path = "done";
+    state.checkIn.ready = true;
+    spawnConfetti(20, false);
+    showFeedback("Now you are ready.", "success");
+  }
+  renderWelcome();
+  updateRenderHooks();
+}
+
 function bindSillyFriends() {
   document.getElementById("sillyStar")?.addEventListener("click", (event) => triggerSilly(event.currentTarget));
   document.getElementById("sillyFish")?.addEventListener("click", (event) => triggerSilly(event.currentTarget));
@@ -1025,6 +1202,13 @@ function buildRenderState() {
       lives: state.challenge.lives || 0,
       streak: state.challenge.streak || 0,
       best: state.challenge.best || 0,
+    },
+    checkIn: {
+      mood: state.checkIn.mood,
+      path: state.checkIn.path,
+      emojiRound: state.checkIn.emojiRound,
+      calmStep: state.checkIn.calmStep,
+      ready: state.checkIn.ready,
     },
     sillyTaps: state.sillyTaps,
     note: "DOM app with origin at top-left of the viewport. State records active island mission progress, drag-drop collections, quiz steps, and Teacher Says lives.",
