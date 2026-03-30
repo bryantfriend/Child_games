@@ -328,6 +328,18 @@ h2 {
   font-size: 2.6rem;
 }
 
+.svg-icon {
+  width: 1.5em;
+  height: 1.5em;
+  object-fit: contain;
+  display: inline-block;
+}
+
+.map-computer-icon {
+  width: 62px;
+  height: 62px;
+}
+
 .island-name {
   font-size: 1.6rem;
   font-weight: 700;
@@ -635,6 +647,13 @@ h2 {
   line-height: 1;
 }
 
+.drop-zone-icon.svg-icon,
+.draggable-item-emoji.svg-icon,
+.sort-icon.svg-icon {
+  width: 62px;
+  height: 62px;
+}
+
 .tray {
   display: grid;
   gap: 12px;
@@ -828,6 +847,7 @@ h2 {
 
 .arcade-target {
   font-size: 3rem;
+  transition: transform 120ms ease;
 }
 
 .arcade-token {
@@ -842,15 +862,29 @@ h2 {
   place-items: center;
 }
 
+.keyboard-token {
+  transform: translate(-50%, -50%);
+}
+
+.mouse-runner {
+  animation: mouseHop 0.7s ease-in-out infinite alternate;
+}
+
 .bug-target,
 .repair-target {
   font-size: 2.5rem;
+  transform: translate(-50%, -50%);
 }
 
 .power-shell {
   display: grid;
   gap: 16px;
   place-items: center;
+}
+
+.computer-svg-large {
+  width: min(240px, 70%);
+  height: auto;
 }
 
 .power-bar {
@@ -1085,6 +1119,20 @@ h2 {
 @keyframes twinkle {
   0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
   50% { transform: scale(1.2) rotate(10deg); opacity: 1; }
+}
+
+@keyframes mouseHop {
+  0% { transform: translate(-50%, -50%) scale(1) rotate(-6deg); }
+  100% { transform: translate(-50%, -62%) scale(1.08) rotate(6deg); }
+}
+
+@keyframes repairSpark {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.22); opacity: 0.7; }
+}
+
+.repair-pulse {
+  animation: repairSpark 0.8s ease-in-out infinite;
 }
 
 @keyframes breatheRing {

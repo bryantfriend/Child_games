@@ -14,4 +14,8 @@ Original prompt: Build this using HTML, CSS and vanilla js. Here is the concept:
 - 2026-03-30: Re-ran Playwright after adding the check-in flow. The app still completed the full lesson successfully after the new welcome gate.
 - 2026-03-30: Added a 100-star Fun Zone unlock with five bonus games: Mouse Chase, Keyboard Smash, Fix Computer, Screen Defender, and Power Up.
 - 2026-03-30: Verified the full path with Playwright, including the 100-star unlock and one successful playthrough of all five Fun Zone games.
+- 2026-03-30: Refactored the oversized single JS app into modular files under `js/`, splitting lessons into `js/lessons/*.js` and Fun Zone games into `js/fun/*.js` with shared core/data/check-in files.
+- 2026-03-30: Replaced the toolbox-looking computer emoji with a custom SVG asset at `assets/computer.svg` and updated the app to use it.
+- 2026-03-30: Reworked the Fun Zone to feel more arcade-like: moving mouse chase, bouncing keyboard smash, staged computer repair, moving screen bugs, and draining power-charge gameplay.
+- 2026-03-30: Re-ran Playwright after the modular refactor and arcade upgrade. The full lesson plus Fun Zone unlock path still completed successfully.
 - TODO: Optional cleanup if desired: remove `node_modules` and the Playwright screenshot artifacts now that verification is finished.
