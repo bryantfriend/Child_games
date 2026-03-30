@@ -12,4 +12,6 @@ Original prompt: Build this using HTML, CSS and vanilla js. Here is the concept:
 - 2026-03-30: Simplified the vocabulary further by renaming "System Unit" to "Computer" in the student-facing game content.
 - 2026-03-30: Added a first-screen emotion check with big emoji choices. Ready learners now do a short emoji game before the lesson, and children who feel sad/angry/sleepy are guided into a short mindfulness routine first.
 - 2026-03-30: Re-ran Playwright after adding the check-in flow. The app still completed the full lesson successfully after the new welcome gate.
+- 2026-03-30: Added a 100-star Fun Zone unlock with five bonus games: Mouse Chase, Keyboard Smash, Fix Computer, Screen Defender, and Power Up.
+- 2026-03-30: Verified the full path with Playwright, including the 100-star unlock and one successful playthrough of all five Fun Zone games.
 - TODO: Optional cleanup if desired: remove `node_modules` and the Playwright screenshot artifacts now that verification is finished.

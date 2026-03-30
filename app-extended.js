@@ -8,6 +8,7 @@ const state = {
   input: {},
   output: {},
   challenge: {},
+  fun: {},
   sillyTaps: 0,
   checkIn: {
     mood: null,
@@ -38,6 +39,11 @@ const games = {
     title: "Challenge Island",
     subtitle: "Listen, tap, or wait.",
     duration: "10 to 12 minutes",
+  },
+  fun: {
+    title: "Fun Zone",
+    subtitle: "Bonus games unlocked!",
+    duration: "Free play",
   },
 };
 
@@ -283,6 +289,10 @@ function openGame(type) {
     showFeedback("Pick a face first.", "info");
     return;
   }
+  if (type === "fun" && state.stars < 100) {
+    showFeedback("Get 100 stars for Fun Zone!", "info");
+    return;
+  }
   state.currentGame = type;
   panelTitle.textContent = games[type].title;
   panelSubtitle.textContent = `${games[type].subtitle} Estimated time: ${games[type].duration}.`;
@@ -291,6 +301,7 @@ function openGame(type) {
   if (type === "input") startInputGame();
   if (type === "output") startOutputGame();
   if (type === "challenge") startChallengeGame();
+  if (type === "fun") startFunZone();
 
   showFeedback("New island mission!", "info");
   updateRenderHooks();
@@ -317,6 +328,314 @@ function getMissionStrip(title, text, missions) {
       </div>
     </div>
   `;
+}
+
+function clearFunTimers() {
+  if (state.fun.timerId) {
+    clearInterval(state.fun.timerId);
+    state.fun.timerId = null;
+  }
+}
+
+function startFunZone() {
+  clearFunTimers();
+  state.fun = {
+    mode: "hub",
+    timerId: null,
+    mouseScore: 0,
+    mouseSpeed: 0,
+    cheeseVisible: false,
+    keyboardLeft: [],
+    fixLeft: [],
+    bugsLeft: [],
+    screenTime: 15,
+    power: 0,
+  };
+  renderFunZone();
+}
+
+function renderFunZone() {
+  const mode = state.fun.mode || "hub";
+
+  if (mode === "hub") {
+    gameArea.innerHTML = `
+      <div class="game-card">
+        ${getCardHeader(`<span class="pill">Unlocked at 100 stars</span><span class="pill">Bonus play</span>`)}
+        ${getMissionStrip("Fun Zone", "Pick any bonus game and play for fun.", [
+          { label: "Mouse Chase", done: false },
+          { label: "Keyboard Smash", done: false },
+          { label: "Fix Computer", done: false },
+          { label: "Screen Defender", done: false },
+          { label: "Power Up", done: false },
+        ])}
+        <div class="fun-hub">
+          <button class="fun-button" type="button" data-fun-game="mouse">🖱️ Mouse Chase</button>
+          <button class="fun-button" type="button" data-fun-game="keyboard">⌨️ Keyboard Smash</button>
+          <button class="fun-button" type="button" data-fun-game="fix">🛠️ Fix Computer</button>
+          <button class="fun-button" type="button" data-fun-game="screen">🦠 Screen Defender</button>
+          <button class="fun-button" type="button" data-fun-game="power">⚡ Power Up</button>
+        </div>
+      </div>
+    `;
+    bindSharedButtons();
+    gameArea.querySelectorAll("[data-fun-game]").forEach((button) => {
+      button.addEventListener("click", () => startBonusGame(button.dataset.funGame));
+    });
+    return;
+  }
+
+  if (mode === "mouse") {
+    renderMouseChase();
+    return;
+  }
+  if (mode === "keyboard") {
+    renderKeyboardSmash();
+    return;
+  }
+  if (mode === "fix") {
+    renderFixComputer();
+    return;
+  }
+  if (mode === "screen") {
+    renderScreenDefender();
+    return;
+  }
+  if (mode === "power") {
+    renderPowerUp();
+  }
+}
+
+function startBonusGame(mode) {
+  clearFunTimers();
+  state.fun.mode = mode;
+
+  if (mode === "mouse") {
+    state.fun.mouseScore = 0;
+    state.fun.cheeseVisible = false;
+  }
+  if (mode === "keyboard") {
+    state.fun.keyboardLeft = shuffleArray(Array.from({ length: 12 }, (_, index) => String.fromCharCode(65 + index)));
+  }
+  if (mode === "fix") {
+    state.fun.fixLeft = ["🪟", "⚡", "🔌", "🪛", "💥", "📎"];
+  }
+  if (mode === "screen") {
+    state.fun.bugsLeft = Array.from({ length: 10 }, (_, index) => `bug-${index}`);
+    state.fun.screenTime = 15;
+    state.fun.timerId = setInterval(() => {
+      state.fun.screenTime -= 1;
+      if (state.fun.screenTime <= 0) {
+        clearFunTimers();
+      }
+      renderFunZone();
+    }, 1000);
+  }
+  if (mode === "power") {
+    state.fun.power = 0;
+  }
+
+  renderFunZone();
+}
+
+function getFunHeader(title, extra = "") {
+  return `
+    <div class="card-header">
+      <button class="back-button" type="button" id="backToFun">⬅ Fun Zone</button>
+      <div class="progress-row">${extra}</div>
+    </div>
+    <div class="mission-strip">
+      <div>
+        <h3>${title}</h3>
+        <p>Bonus arcade play.</p>
+      </div>
+      <div class="lesson-plan">
+        <div class="lesson-chip">Fun Zone</div>
+      </div>
+    </div>
+  `;
+}
+
+function bindBackToFun() {
+  document.getElementById("backToFun")?.addEventListener("click", () => {
+    clearFunTimers();
+    state.fun.mode = "hub";
+    renderFunZone();
+  });
+}
+
+function renderMouseChase() {
+  const targetLeft = 12 + ((state.fun.mouseScore * 53) % 72);
+  const targetTop = 18 + ((state.fun.mouseScore * 37) % 62);
+  const showCheese = state.fun.mouseScore > 0 && state.fun.mouseScore % 3 === 0;
+
+  gameArea.innerHTML = `
+    <div class="game-card">
+      ${getFunHeader("Mouse Chase", `<span class="pill">Catches ${state.fun.mouseScore} / 8</span>`)}
+      <div class="arcade-board">
+        <div class="arcade-stage">
+          <button class="arcade-target" type="button" id="mouseTarget" style="left:${targetLeft}%; top:${targetTop}%;">🐭</button>
+          ${showCheese ? `<button class="arcade-target" type="button" id="cheeseTarget" style="left:${78 - targetLeft / 2}%; top:${72 - targetTop / 2}%;">🧀</button>` : ""}
+        </div>
+      </div>
+    </div>
+  `;
+  bindBackToFun();
+  document.getElementById("mouseTarget")?.addEventListener("click", () => {
+    state.fun.mouseScore += 1;
+    bumpStars(1);
+    if (state.fun.mouseScore >= 8) {
+      showFeedback("Mouse caught!", "success");
+      spawnConfetti(28, false);
+      state.fun.mode = "hub";
+      renderFunZone();
+      return;
+    }
+    showFeedback("Catch it!", "success");
+    renderMouseChase();
+  });
+  document.getElementById("cheeseTarget")?.addEventListener("click", () => {
+    bumpStars(2);
+    showFeedback("Cheese bonus!", "success");
+    renderMouseChase();
+  });
+}
+
+function renderKeyboardSmash() {
+  gameArea.innerHTML = `
+    <div class="game-card">
+      ${getFunHeader("Keyboard Smash", `<span class="pill">Letters left ${state.fun.keyboardLeft.length}</span>`)}
+      <div class="arcade-board">
+        <div class="arcade-stage">
+          ${state.fun.keyboardLeft.map((letter, index) => `
+            <button class="arcade-token" type="button" data-letter="${letter}" style="left:${6 + (index % 4) * 22}%; top:${8 + Math.floor(index / 4) * 24}%;">${letter}</button>
+          `).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+  bindBackToFun();
+  gameArea.querySelectorAll("[data-letter]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.fun.keyboardLeft = state.fun.keyboardLeft.filter((entry) => entry !== button.dataset.letter);
+      bumpStars(1);
+      showFeedback("Smash!", "success");
+      if (state.fun.keyboardLeft.length === 0) {
+        spawnConfetti(28, false);
+        state.fun.mode = "hub";
+        renderFunZone();
+        return;
+      }
+      renderKeyboardSmash();
+    });
+  });
+}
+
+function renderFixComputer() {
+  gameArea.innerHTML = `
+    <div class="game-card">
+      ${getFunHeader("Fix Computer", `<span class="pill">Fixes left ${state.fun.fixLeft.length}</span>`)}
+      <div class="arcade-board">
+        <div class="arcade-stage">
+          <div class="power-shell">
+            <div class="object-icon">💻</div>
+            <div class="lesson-plan">
+              ${state.fun.fixLeft.map((item, index) => `<button class="repair-target" type="button" data-fix="${item}" style="left:${10 + index * 13}%; top:${20 + (index % 2) * 28}%;">${item}</button>`).join("")}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  bindBackToFun();
+  gameArea.querySelectorAll("[data-fix]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.fun.fixLeft = state.fun.fixLeft.filter((entry) => entry !== button.dataset.fix);
+      bumpStars(1);
+      showFeedback("Fix!", "success");
+      if (state.fun.fixLeft.length === 0) {
+        showFeedback("SYSTEM FIXED!", "success");
+        spawnConfetti(30, false);
+        state.fun.mode = "hub";
+        renderFunZone();
+        return;
+      }
+      renderFixComputer();
+    });
+  });
+}
+
+function renderScreenDefender() {
+  if (state.fun.screenTime <= 0 && state.fun.bugsLeft.length > 0) {
+    gameArea.innerHTML = `
+      <div class="game-card">
+        ${getFunHeader("Screen Defender", `<span class="pill">Time up!</span>`)}
+        <div class="win-panel">
+          <h3>Try again!</h3>
+          <p>The bugs are still on the screen.</p>
+          <button class="big-choice output-choice calm-button" type="button" id="retryScreenBtn">Play Again</button>
+        </div>
+      </div>
+    `;
+    bindBackToFun();
+    document.getElementById("retryScreenBtn")?.addEventListener("click", () => startBonusGame("screen"));
+    return;
+  }
+
+  gameArea.innerHTML = `
+    <div class="game-card">
+      ${getFunHeader("Screen Defender", `<span class="pill">Time ${state.fun.screenTime}</span><span class="pill">Bugs ${state.fun.bugsLeft.length}</span>`)}
+      <div class="arcade-board">
+        <div class="arcade-stage">
+          ${state.fun.bugsLeft.map((bug, index) => `<button class="bug-target" type="button" data-bug="${bug}" style="left:${8 + (index % 5) * 17}%; top:${12 + Math.floor(index / 5) * 34}%;">🦠</button>`).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+  bindBackToFun();
+  gameArea.querySelectorAll("[data-bug]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.fun.bugsLeft = state.fun.bugsLeft.filter((entry) => entry !== button.dataset.bug);
+      bumpStars(1);
+      if (state.fun.bugsLeft.length === 0) {
+        clearFunTimers();
+        showFeedback("Clean screen!", "success");
+        spawnConfetti(30, false);
+        state.fun.mode = "hub";
+        renderFunZone();
+        return;
+      }
+      renderScreenDefender();
+    });
+  });
+}
+
+function renderPowerUp() {
+  gameArea.innerHTML = `
+    <div class="game-card">
+      ${getFunHeader("Power Up", `<span class="pill">Power ${state.fun.power}%</span>`)}
+      <div class="arcade-board">
+        <div class="power-shell">
+          <div class="object-icon">🔋</div>
+          <div class="power-bar"><div class="power-fill" style="width:${Math.min(state.fun.power, 100)}%;"></div></div>
+          <button class="big-choice input-choice calm-button" type="button" id="powerTapBtn">TAP FAST ⚡</button>
+        </div>
+      </div>
+    </div>
+  `;
+  bindBackToFun();
+  document.getElementById("powerTapBtn")?.addEventListener("click", () => {
+    state.fun.power += 10;
+    bumpStars(1);
+    if (state.fun.power >= 100) {
+      showFeedback("POWER FULL!", "success");
+      spawnConfetti(32, false);
+      state.fun.mode = "hub";
+      renderFunZone();
+      return;
+    }
+    showFeedback("Charge!", "success");
+    renderPowerUp();
+  });
 }
 
 function startBuildGame() {
@@ -741,14 +1060,17 @@ function renderDraggable(item, kind, placed = false) {
 
 function bindSharedButtons() {
   document.getElementById("backToMap")?.addEventListener("click", () => {
+    clearFunTimers();
     renderWelcome();
     updateRenderHooks();
   });
 }
 
 function setIslandAccess() {
-  const locked = !state.checkIn.ready;
   document.querySelectorAll(".island-card").forEach((button) => {
+    const needsCheckIn = !state.checkIn.ready;
+    const needsStars = button.dataset.game === "fun" && state.stars < 100;
+    const locked = needsCheckIn || needsStars;
     button.disabled = locked;
     button.classList.toggle("locked-island", locked);
   });
@@ -1101,8 +1423,9 @@ function bumpStars(amount) {
 function completeGame(id) {
   if (!state.completed.has(id)) {
     state.completed.add(id);
+    state.stars += 25;
     updateScoreboard();
-    showFeedback("Island complete!", "success");
+    showFeedback("Island complete! +25 stars!", "success");
     spawnConfetti(42, true);
   }
 }
@@ -1110,6 +1433,11 @@ function completeGame(id) {
 function updateScoreboard() {
   starCount.textContent = String(state.stars);
   completedCount.textContent = `${state.completed.size} / 4`;
+  setIslandAccess();
+  if (state.stars === 100) {
+    showFeedback("Fun Zone unlocked!", "success");
+    spawnConfetti(60, true);
+  }
 }
 
 function shuffleArray(items) {
@@ -1202,6 +1530,16 @@ function buildRenderState() {
       lives: state.challenge.lives || 0,
       streak: state.challenge.streak || 0,
       best: state.challenge.best || 0,
+    },
+    fun: {
+      mode: state.fun.mode || "hub",
+      mouseScore: state.fun.mouseScore || 0,
+      keyboardLeft: state.fun.keyboardLeft?.length || 0,
+      fixLeft: state.fun.fixLeft?.length || 0,
+      bugsLeft: state.fun.bugsLeft?.length || 0,
+      screenTime: state.fun.screenTime || 0,
+      power: state.fun.power || 0,
+      unlocked: state.stars >= 100,
     },
     checkIn: {
       mood: state.checkIn.mood,

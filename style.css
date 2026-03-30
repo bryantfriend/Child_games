@@ -322,6 +322,7 @@ h2 {
 .island-input { background: linear-gradient(180deg, #2ec27e, #167d54); }
 .island-output { background: linear-gradient(180deg, #ff8e3c, #db5e1d); }
 .island-challenge { background: linear-gradient(180deg, #ef476f, #a41f4a); }
+.island-fun { background: linear-gradient(180deg, #8b5cf6, #5b21b6); }
 
 .island-emoji {
   font-size: 2.6rem;
@@ -767,6 +768,114 @@ h2 {
   gap: 18px;
 }
 
+.fun-hub,
+.arcade-card,
+.arcade-board {
+  display: grid;
+  gap: 18px;
+}
+
+.fun-hub {
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
+}
+
+.fun-button {
+  min-height: 132px;
+  border: 0;
+  border-radius: 28px;
+  background: linear-gradient(180deg, #ede4ff, #ccb8ff);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.2rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 14px 22px rgba(23, 64, 102, 0.12);
+  transition: transform 160ms ease;
+}
+
+.fun-button:hover,
+.fun-button:focus-visible {
+  transform: translateY(-4px) scale(1.02);
+}
+
+.arcade-board {
+  min-height: 380px;
+  padding: 18px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, #f7fbff, #dff4ff);
+  position: relative;
+  overflow: hidden;
+}
+
+.arcade-stage {
+  position: relative;
+  min-height: 300px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #d7f2ff, #b7e8ff);
+  overflow: hidden;
+}
+
+.arcade-token,
+.arcade-target,
+.bug-target,
+.repair-target {
+  position: absolute;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.arcade-target {
+  font-size: 3rem;
+}
+
+.arcade-token {
+  width: 68px;
+  height: 68px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #fff6d8, #ffe08a);
+  box-shadow: 0 12px 16px rgba(23, 64, 102, 0.12);
+  font-size: 1.5rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+
+.bug-target,
+.repair-target {
+  font-size: 2.5rem;
+}
+
+.power-shell {
+  display: grid;
+  gap: 16px;
+  place-items: center;
+}
+
+.power-bar {
+  width: min(440px, 100%);
+  height: 38px;
+  border-radius: 999px;
+  background: #dbeef8;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 4px rgba(255,255,255,0.8);
+}
+
+.power-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #ffd84f, #ff8e3c, #ff5d8f);
+  transition: width 120ms ease;
+}
+
+.arcade-meter {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .object-display,
 .teacher-stage {
   background: linear-gradient(180deg, #dbf4ff, #bae6fd);
@@ -1029,7 +1138,8 @@ h2 {
   .choice-pair,
   .challenge-grid,
   .emoji-grid,
-  .mini-game-grid {
+  .mini-game-grid,
+  .fun-hub {
     grid-template-columns: 1fr;
   }
 
