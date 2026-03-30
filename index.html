@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ICT Adventure Island</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Touch, Sort, Build, and Play</p>
+        <h1>ICT Adventure Island</h1>
+        <p class="hero-text">Travel across colorful islands, learn computer parts, and finish fun classroom challenges.</p>
+      </div>
+      <div class="scoreboard" aria-live="polite">
+        <div class="score-card">
+          <span class="score-label">Stars</span>
+          <strong id="starCount">0</strong>
+        </div>
+        <div class="score-card">
+          <span class="score-label">Completed</span>
+          <strong id="completedCount">0 / 4</strong>
+        </div>
+      </div>
+    </header>
+
+    <main id="game" class="game-layout">
+      <section class="map-panel">
+        <div class="section-heading">
+          <h2>Island Map</h2>
+          <p>Tap an island to begin an activity.</p>
+        </div>
+        <div id="map" class="island-grid" aria-label="Adventure islands">
+          <button class="island-card island-computer" data-game="build">
+            <span class="island-emoji">🖥️</span>
+            <span class="island-name">Computer Island</span>
+            <span class="island-task">Build a computer</span>
+          </button>
+          <button class="island-card island-input" data-game="input">
+            <span class="island-emoji">🧠</span>
+            <span class="island-name">Input Island</span>
+            <span class="island-task">Sort input and output</span>
+          </button>
+          <button class="island-card island-output" data-game="output">
+            <span class="island-emoji">📺</span>
+            <span class="island-name">Output Island</span>
+            <span class="island-task">Choose the right job</span>
+          </button>
+          <button class="island-card island-challenge" data-game="challenge">
+            <span class="island-emoji">🎯</span>
+            <span class="island-name">Challenge Island</span>
+            <span class="island-task">Teacher Says!</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="play-panel">
+        <div class="section-heading">
+          <h2 id="panelTitle">Welcome, explorer!</h2>
+          <p id="panelSubtitle">Pick an island to start your ICT adventure.</p>
+        </div>
+
+        <div id="feedbackBanner" class="feedback-banner" aria-live="assertive"></div>
+        <div id="gameArea" class="game-area"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app-extended.js"></script>
+</body>
+</html>

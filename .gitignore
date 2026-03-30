@@ -1,0 +1,4 @@
+node_modules/
+playwright-*.png
+verify-playwright.js
+app.js
