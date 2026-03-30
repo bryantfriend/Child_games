@@ -8,27 +8,28 @@ const state = {
   input: {},
   output: {},
   challenge: {},
+  sillyTaps: 0,
 };
 
 const games = {
   build: {
     title: "Computer Island",
-    subtitle: "Build, match jobs, and help a computer come alive.",
+    subtitle: "Build, match, and tap.",
     duration: "8 to 10 minutes",
   },
   input: {
     title: "Input Island",
-    subtitle: "Sort devices, answer scenarios, and race through a speed round.",
+    subtitle: "Sort, choose, and go fast.",
     duration: "8 to 10 minutes",
   },
   output: {
     title: "Output Island",
-    subtitle: "Name parts, choose the best tool, and collect smart answers.",
+    subtitle: "Name it and choose it.",
     duration: "8 to 10 minutes",
   },
   challenge: {
     title: "Challenge Island",
-    subtitle: "Teacher Says now has trick rounds, streaks, and lives.",
+    subtitle: "Listen, tap, or wait.",
     duration: "10 to 12 minutes",
   },
 };
@@ -41,10 +42,10 @@ const buildParts = [
 ];
 
 const buildFunctions = [
-  { id: "type", label: "Type words", emoji: "✍️", target: "keyboard" },
-  { id: "see", label: "See pictures", emoji: "👀", target: "monitor" },
-  { id: "click", label: "Point and click", emoji: "👉", target: "mouse" },
-  { id: "think", label: "Process information", emoji: "⚙️", target: "system" },
+  { id: "type", label: "Type", emoji: "✍️", target: "keyboard" },
+  { id: "see", label: "See", emoji: "👀", target: "monitor" },
+  { id: "click", label: "Click", emoji: "👉", target: "mouse" },
+  { id: "think", label: "Brain", emoji: "⚙️", target: "system" },
 ];
 
 const buildPrompts = [
@@ -69,32 +70,32 @@ const sortDeck = [
 ];
 
 const inputScenarios = [
-  { text: "You want to record your voice.", answer: "input" },
-  { text: "You want to hear the song.", answer: "output" },
-  { text: "You want to type your name.", answer: "input" },
-  { text: "You want to see the picture on the screen.", answer: "output" },
-  { text: "You want to send a photo into the computer.", answer: "input" },
-  { text: "You want the computer to print your work.", answer: "output" },
+  { text: "Voice in?", answer: "input" },
+  { text: "Music out?", answer: "output" },
+  { text: "Type name?", answer: "input" },
+  { text: "See picture?", answer: "output" },
+  { text: "Photo in?", answer: "input" },
+  { text: "Print page?", answer: "output" },
 ];
 
 const outputQuestions = [
   { item: "Keyboard", emoji: "⌨️", prompt: "What does it do?", correct: "Type", options: ["Type", "Hear", "Sleep"] },
   { item: "Mouse", emoji: "🖱️", prompt: "What does it do?", correct: "Move", options: ["Move", "Print", "Sing"] },
-  { item: "Monitor", emoji: "🖥️", prompt: "What does it do?", correct: "Show", options: ["Show", "Eat", "Jump"] },
-  { item: "Speaker", emoji: "🔊", prompt: "What does it do?", correct: "Play sound", options: ["Play sound", "Type", "Take photos"] },
+  { item: "Monitor", emoji: "🖥️", prompt: "What does it do?", correct: "See", options: ["See", "Eat", "Jump"] },
+  { item: "Speaker", emoji: "🔊", prompt: "What does it do?", correct: "Hear", options: ["Hear", "Type", "Photo"] },
   { item: "Printer", emoji: "🖨️", prompt: "What does it do?", correct: "Print", options: ["Print", "Talk", "Record"] },
-  { item: "Microphone", emoji: "🎤", prompt: "What does it do?", correct: "Record sound", options: ["Record sound", "See", "Dance"] },
-  { item: "Webcam", emoji: "📷", prompt: "What does it do?", correct: "Capture video", options: ["Capture video", "Play music", "Move the cursor"] },
-  { item: "Headphones", emoji: "🎧", prompt: "What does it do?", correct: "Let you hear", options: ["Let you hear", "Print pages", "Store food"] },
+  { item: "Microphone", emoji: "🎤", prompt: "What does it do?", correct: "Talk", options: ["Talk", "See", "Dance"] },
+  { item: "Webcam", emoji: "📷", prompt: "What does it do?", correct: "Photo", options: ["Photo", "Music", "Move"] },
+  { item: "Headphones", emoji: "🎧", prompt: "What does it do?", correct: "Hear", options: ["Hear", "Print", "Food"] },
 ];
 
 const outputScenarios = [
-  { text: "The class wants to watch a video on the wall.", correct: "Projector", options: ["Projector", "Mouse", "Keyboard"] },
-  { text: "Sara wants to hear a story quietly.", correct: "Headphones", options: ["Headphones", "Printer", "Webcam"] },
-  { text: "The teacher needs paper homework copies.", correct: "Printer", options: ["Printer", "Speaker", "Microphone"] },
-  { text: "Ali wants to see the game on a screen.", correct: "Monitor", options: ["Monitor", "Mouse", "Microphone"] },
-  { text: "The computer should play music for the class.", correct: "Speaker", options: ["Speaker", "Keyboard", "Touch Screen"] },
-  { text: "The class wants to take a live class photo.", correct: "Webcam", options: ["Webcam", "Printer", "Speaker"] },
+  { text: "Big wall video?", correct: "Projector", options: ["Projector", "Mouse", "Keyboard"] },
+  { text: "Hear story?", correct: "Headphones", options: ["Headphones", "Printer", "Webcam"] },
+  { text: "Paper page?", correct: "Printer", options: ["Printer", "Speaker", "Microphone"] },
+  { text: "See game?", correct: "Monitor", options: ["Monitor", "Mouse", "Microphone"] },
+  { text: "Play music?", correct: "Speaker", options: ["Speaker", "Keyboard", "Touch Screen"] },
+  { text: "Take class photo?", correct: "Webcam", options: ["Webcam", "Printer", "Speaker"] },
 ];
 
 const challengeRounds = [
@@ -120,17 +121,29 @@ const challengeTargets = [
   { id: "wait", label: "Wait!", emoji: "✋" },
 ];
 
+const sillyMessages = [
+  "Boing! Silly tap!",
+  "Splash! A funny fish!",
+  "Twinkle! A happy star!",
+  "Wiggle wiggle!",
+  "Haha! Try the game too!",
+];
+
+const confettiColors = ["#ff5d8f", "#ffd84f", "#4cc9f0", "#2ec27e", "#ff8e3c", "#a78bfa"];
+
 const gameArea = document.getElementById("gameArea");
 const panelTitle = document.getElementById("panelTitle");
 const panelSubtitle = document.getElementById("panelSubtitle");
 const starCount = document.getElementById("starCount");
 const completedCount = document.getElementById("completedCount");
 const feedbackBanner = document.getElementById("feedbackBanner");
+const confettiLayer = document.getElementById("confettiLayer");
 
 document.querySelectorAll(".island-card").forEach((button) => {
   button.addEventListener("click", () => openGame(button.dataset.game));
 });
 
+bindSillyFriends();
 renderWelcome();
 updateScoreboard();
 updateRenderHooks();
@@ -138,18 +151,18 @@ updateRenderHooks();
 function renderWelcome() {
   state.currentGame = null;
   panelTitle.textContent = "Welcome, explorer!";
-  panelSubtitle.textContent = "Pick an island to start your 40-minute ICT adventure.";
+  panelSubtitle.textContent = "Tap an island. Play. Learn.";
   gameArea.innerHTML = `
     <div class="welcome-card">
       <div class="welcome-stack">
         <strong>🌴</strong>
         <h3>Adventure Map Ready</h3>
-        <p class="hero-text">Each island now has several missions, so the class can play, discuss, and practice for much longer.</p>
+        <p class="hero-text">Big buttons. Easy words. Lots of play.</p>
         <div class="lesson-plan">
-          <div class="lesson-chip">Computer Island: 3 missions</div>
-          <div class="lesson-chip">Input Island: 3 missions</div>
-          <div class="lesson-chip">Output Island: 2 big rounds</div>
-          <div class="lesson-chip">Challenge Island: 10 Teacher Says rounds</div>
+          <div class="lesson-chip">Build</div>
+          <div class="lesson-chip">Sort</div>
+          <div class="lesson-chip">Choose</div>
+          <div class="lesson-chip">Teacher Says</div>
         </div>
       </div>
     </div>
@@ -234,7 +247,7 @@ function renderBuildGame() {
           <div class="draggable-list">
             ${shuffleArray([...buildParts]).map((part) => renderDraggable(part, "build", Boolean(build.placed[part.id]))).join("")}
           </div>
-          <p class="hint">Build the computer first. Then the island will unlock the next mission.</p>
+          <p class="hint">Drag the part to the same picture.</p>
         </div>
       </div>
     `;
@@ -261,7 +274,7 @@ function renderBuildGame() {
           <div class="draggable-list">
             ${shuffleArray([...buildFunctions]).map((card) => renderDraggable(card, "function", build.matched.includes(card.target))).join("")}
           </div>
-          <p class="hint">Now match each computer part to the job it does.</p>
+          <p class="hint">Match the job card.</p>
         </div>
       </div>
     `;
@@ -274,7 +287,7 @@ function renderBuildGame() {
         <div class="teacher-stage">
           <div class="teacher-icon">⚡</div>
           <h3 class="teacher-command">${prompt.clue}</h3>
-          <p class="teacher-subtext">Fast round: tap the correct computer part. ${build.promptIndex + 1} / ${buildPrompts.length}</p>
+          <p class="teacher-subtext">Tap the right part. ${build.promptIndex + 1} / ${buildPrompts.length}</p>
         </div>
         <div class="teacher-targets">
           ${shuffleArray([...buildParts]).map((part) => `
@@ -292,7 +305,7 @@ function renderBuildGame() {
     body = `
       <div class="win-panel">
         <h3>Computer Island complete!</h3>
-        <p>You built the computer, matched every job, and won the quick tap challenge.</p>
+        <p>You built it, matched it, and tapped fast.</p>
       </div>
     `;
   }
@@ -300,7 +313,7 @@ function renderBuildGame() {
   gameArea.innerHTML = `
     <div class="game-card">
       ${getCardHeader(`<span class="pill">Estimated 8 to 10 minutes</span><span class="pill">Stars: ${state.stars}</span>`)}
-      ${getMissionStrip("Island Missions", "Computer Island now has three parts so students build, think, and react.", missions)}
+      ${getMissionStrip("Island Missions", "3 easy jobs: build, match, tap.", missions)}
       ${body}
     </div>
   `;
@@ -340,19 +353,19 @@ function renderInputGame() {
         <div class="sort-launcher">
           <h3>Incoming Devices</h3>
           <div class="draggable-list" id="sortSource"></div>
-          <p class="hint">There are 10 devices now, so students stay busy longer.</p>
+          <p class="hint">Drag to INPUT or OUTPUT.</p>
         </div>
         <div class="sort-zones">
           <div class="sort-zone input-zone" data-sort-zone="input">
             <h3>Input</h3>
-            <p>Used to send information into the computer.</p>
+            <p>In to computer.</p>
             <div class="captured-list" id="inputBucket">
               ${input.buckets.input.map((item) => `<div class="captured-chip"><span class="sort-icon">${item.emoji}</span><span>${item.label}</span></div>`).join("")}
             </div>
           </div>
           <div class="sort-zone output-zone" data-sort-zone="output">
             <h3>Output</h3>
-            <p>Used to show, print, or play information.</p>
+            <p>Out from computer.</p>
             <div class="captured-list" id="outputBucket">
               ${input.buckets.output.map((item) => `<div class="captured-chip"><span class="sort-icon">${item.emoji}</span><span>${item.label}</span></div>`).join("")}
             </div>
@@ -368,14 +381,14 @@ function renderInputGame() {
       <div class="scenario-card">
         <div class="object-display">
           <div class="object-icon">🧠</div>
-          <h3>Scenario Sort</h3>
+          <h3>Choose</h3>
           <p class="question-text">${scenario.text}</p>
         </div>
         <div class="choice-pair">
           <button class="big-choice input-choice" type="button" data-input-choice="input">INPUT</button>
           <button class="big-choice output-choice" type="button" data-input-choice="output">OUTPUT</button>
         </div>
-        <p class="hint">Students can discuss first, then tap together.</p>
+        <p class="hint">Point, say, then tap.</p>
       </div>
     `;
   }
@@ -387,7 +400,7 @@ function renderInputGame() {
         <div class="object-display">
           <div class="object-icon">${current.emoji}</div>
           <h3>${current.label}</h3>
-          <p class="question-text">Quick! Is this input or output?</p>
+          <p class="question-text">Input or output?</p>
         </div>
         <div class="choice-pair">
           <button class="big-choice input-choice" type="button" data-rush-choice="input">INPUT</button>
@@ -405,7 +418,7 @@ function renderInputGame() {
     body = `
       <div class="win-panel">
         <h3>Input Island complete!</h3>
-        <p>You sorted devices, solved classroom scenarios, and won the speed challenge.</p>
+        <p>You sorted, chose, and went fast.</p>
       </div>
     `;
   }
@@ -413,7 +426,7 @@ function renderInputGame() {
   gameArea.innerHTML = `
     <div class="game-card">
       ${getCardHeader(`<span class="pill">Estimated 8 to 10 minutes</span><span class="pill">${input.mission <= 3 ? `Mission ${input.mission} of 3` : "All missions done"}</span>`)}
-      ${getMissionStrip("Island Missions", "Input Island mixes drag-and-drop, discussion prompts, and quick choices.", missions)}
+      ${getMissionStrip("Island Missions", "3 easy jobs: sort, choose, go fast.", missions)}
       ${body}
     </div>
   `;
@@ -475,7 +488,7 @@ function renderOutputGame() {
       <div class="scenario-card">
         <div class="object-display">
           <div class="object-icon">🏝️</div>
-          <h3>Choose the Best Tool</h3>
+          <h3>Pick one</h3>
           <p class="question-text">${scenario.text}</p>
         </div>
         <div class="answers-grid">
@@ -483,7 +496,7 @@ function renderOutputGame() {
             <button class="answer-button" type="button" data-output-tool="${option}">${option}</button>
           `).join("")}
         </div>
-        <p class="hint">This round adds more thinking and discussion before tapping.</p>
+        <p class="hint">Look. Think. Tap.</p>
       </div>
     `;
   }
@@ -492,7 +505,7 @@ function renderOutputGame() {
     body = `
       <div class="win-panel">
         <h3>Output Island complete!</h3>
-        <p>You answered function questions and picked the best ICT tools for each situation.</p>
+        <p>You named the parts and picked the best tool.</p>
       </div>
     `;
   }
@@ -500,7 +513,7 @@ function renderOutputGame() {
   gameArea.innerHTML = `
     <div class="game-card">
       ${getCardHeader(`<span class="pill">Estimated 8 to 10 minutes</span><span class="pill">Badges ${output.badges}</span>`)}
-      ${getMissionStrip("Island Missions", "Output Island now includes more questions and classroom scenarios.", missions)}
+      ${getMissionStrip("Island Missions", "2 easy jobs: answer and choose.", missions)}
       ${body}
     </div>
   `;
@@ -535,7 +548,7 @@ function renderChallengeGame() {
         ${getCardHeader(`<span class="pill">Teacher Says Finale</span><span class="pill">Best streak ${challenge.best}</span>`)}
         <div class="win-panel">
           <h3>${win ? "Challenge Island complete!" : "Challenge over!"}</h3>
-          <p>${win ? "You survived all 10 Teacher Says rounds." : "You ran out of lives, but the class can jump back in and try again."}</p>
+          <p>${win ? "You finished all 10 rounds." : "No more lives. Try again."}</p>
           <div class="lesson-plan">
             <div class="lesson-chip">Rounds cleared ${challenge.round}</div>
             <div class="lesson-chip">Best streak ${challenge.best}</div>
@@ -553,7 +566,7 @@ function renderChallengeGame() {
   gameArea.innerHTML = `
     <div class="game-card">
       ${getCardHeader(`<span class="pill">Estimated 10 to 12 minutes</span><span class="pill">Round ${challenge.round + 1} / ${challengeRounds.length}</span>`)}
-      ${getMissionStrip("Island Missions", "This island now uses real Simon Says rules: only tap when the teacher says.", [
+      ${getMissionStrip("Island Missions", "Tap when teacher says. Wait on trick rounds.", [
         { label: "Watch carefully", done: false },
         { label: "Build a streak", done: false },
         { label: "Protect your 3 lives", done: false },
@@ -562,7 +575,7 @@ function renderChallengeGame() {
         <div class="teacher-stage">
           <div class="teacher-icon">${round.says ? "🧑‍🏫" : "🤫"}</div>
           <h3 class="teacher-command">${round.prompt}</h3>
-          <p class="teacher-subtext">${round.says ? "Teacher really said it. Tap the correct object." : "Trap round. The safe answer is WAIT."}</p>
+          <p class="teacher-subtext">${round.says ? "Teacher says it. Tap." : "No teacher says. Wait."}</p>
           <div class="lesson-plan">
             <div class="lesson-chip">Lives ${"❤️".repeat(challenge.lives)}</div>
             <div class="lesson-chip">Streak ${challenge.streak}</div>
@@ -618,6 +631,21 @@ function bindSharedButtons() {
     renderWelcome();
     updateRenderHooks();
   });
+}
+
+function bindSillyFriends() {
+  document.getElementById("sillyStar")?.addEventListener("click", (event) => triggerSilly(event.currentTarget));
+  document.getElementById("sillyFish")?.addEventListener("click", (event) => triggerSilly(event.currentTarget));
+}
+
+function triggerSilly(button) {
+  state.sillyTaps += 1;
+  button.classList.remove("silly-pop");
+  void button.offsetWidth;
+  button.classList.add("silly-pop");
+  bumpStars(1);
+  showFeedback(pickRandom(sillyMessages), "info");
+  spawnConfetti(10, false);
 }
 
 function bindDragSystem() {
@@ -880,7 +908,7 @@ function shakeCurrentSource(message) {
 
 function showFeedback(message, tone) {
   feedbackBanner.textContent = message;
-  feedbackBanner.className = `feedback-banner show feedback-${tone}`;
+  feedbackBanner.className = `feedback-banner show feedback-${tone}${tone === "success" ? " party" : ""}`;
   playTone(tone);
   clearTimeout(state.feedbackTimeout);
   state.feedbackTimeout = setTimeout(() => {
@@ -898,6 +926,7 @@ function completeGame(id) {
     state.completed.add(id);
     updateScoreboard();
     showFeedback("Island complete!", "success");
+    spawnConfetti(42, true);
   }
 }
 
@@ -912,6 +941,28 @@ function shuffleArray(items) {
     [items[index], items[swapIndex]] = [items[swapIndex], items[index]];
   }
   return items;
+}
+
+function pickRandom(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+function spawnConfetti(count, bigBurst) {
+  if (!confettiLayer) {
+    return;
+  }
+
+  for (let index = 0; index < count; index += 1) {
+    const piece = document.createElement("div");
+    piece.className = "confetti-piece";
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.background = confettiColors[index % confettiColors.length];
+    piece.style.animationDuration = `${bigBurst ? 2.6 + Math.random() * 1.2 : 1.4 + Math.random() * 0.9}s`;
+    piece.style.animationDelay = `${Math.random() * 0.25}s`;
+    piece.style.transform = `rotate(${Math.random() * 360}deg) scale(${0.7 + Math.random() * 0.8})`;
+    confettiLayer.appendChild(piece);
+    setTimeout(() => piece.remove(), 4200);
+  }
 }
 
 function playTone(tone) {
@@ -975,6 +1026,7 @@ function buildRenderState() {
       streak: state.challenge.streak || 0,
       best: state.challenge.best || 0,
     },
+    sillyTaps: state.sillyTaps,
     note: "DOM app with origin at top-left of the viewport. State records active island mission progress, drag-drop collections, quiz steps, and Teacher Says lives.",
   };
 }

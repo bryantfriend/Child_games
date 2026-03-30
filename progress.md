@@ -7,4 +7,6 @@ Original prompt: Build this using HTML, CSS and vanilla js. Here is the concept:
 - 2026-03-30: Verified the app with Playwright across the map, build, sort, quiz, and Teacher Says flows. The automated run completed all four islands and ended at 25 stars / 4 of 4 completed.
 - 2026-03-30: Expanded the lesson into a longer format. Computer Island now has 3 missions, Input Island has 3 missions, Output Island has 2 larger rounds, and Challenge Island has 10 Teacher Says rounds with streaks and lives.
 - 2026-03-30: Switched the page to `app-extended.js` and verified the longer flow with Playwright. The automated run completed all islands at 96 stars with all missions cleared.
+- 2026-03-30: Added playful SVG scenery, floating decorative characters, confetti celebrations, extra animation, and random silly clickable friends to make the lesson feel more joyful for young kids.
+- 2026-03-30: Re-ran Playwright after the visual polish. The full flow still completed all islands successfully with the new kid-friendly decorations active.
 - TODO: Optional cleanup if desired: remove `node_modules` and the Playwright screenshot artifacts now that verification is finished.
