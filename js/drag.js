@@ -41,7 +41,7 @@
     if (!app.state.drag) return;
     moveGhost(event.clientX, event.clientY);
     clearHighlights();
-    var el = document.elementFromPoint(event.clientX, event.clientY);
+    var el = getElementUnderPointer(event.clientX, event.clientY);
     if (el) {
        var target = el.closest("[data-zone], [data-sort-zone], [data-function-target]");
        if (target) target.classList.add("active");
@@ -50,7 +50,7 @@
 
   function endDrag(event) {
     if (!app.state.drag) return;
-    var el = document.elementFromPoint(event.clientX, event.clientY);
+    var el = getElementUnderPointer(event.clientX, event.clientY);
     var target = el ? el.closest("[data-zone], [data-sort-zone], [data-function-target]") : null;
     clearHighlights();
     
@@ -75,7 +75,9 @@
   }
 
   function cleanupDrag(source, pointerId) {
-    source.releasePointerCapture(pointerId);
+    if (source.hasPointerCapture && source.hasPointerCapture(pointerId)) {
+      source.releasePointerCapture(pointerId);
+    }
     source.removeEventListener("pointermove", onDragMove);
     source.removeEventListener("pointerup", endDrag);
     source.removeEventListener("pointercancel", cancelDrag);
@@ -85,6 +87,16 @@
       }
     }
     app.state.drag = null;
+  }
+
+  function getElementUnderPointer(x, y) {
+    if (!app.state.drag || !app.state.drag.ghost) return document.elementFromPoint(x, y);
+    var ghost = app.state.drag.ghost;
+    var oldDisplay = ghost.style.display;
+    ghost.style.display = "none";
+    var el = document.elementFromPoint(x, y);
+    ghost.style.display = oldDisplay;
+    return el;
   }
 
   app.helpers.bindDragSystem = bindDragSystem;

@@ -240,6 +240,17 @@ body {
 .draggable-item { background: #fff; padding: 15px; border-radius: 16px; display: flex; gap: 15px; align-items: center; cursor: grab; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 2px solid #eee; margin-bottom: 10px; }
 .draggable-item.placed { opacity: 0.4; pointer-events: none; }
 .draggable-item-emoji { font-size: 2.5rem; }
+.drag-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: min(280px, 40vw);
+  opacity: 0.9;
+  transform: translate(-50%, -50%) rotate(3deg);
+  pointer-events: none;
+  z-index: 5000;
+  box-shadow: 0 18px 28px rgba(0,0,0,0.18);
+}
 
 .drop-zone-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; padding: 20px; width: 100%; }
 .drop-zone { background: #f0f7f4; border: 4px dashed #6dd5ed; border-radius: 20px; aspect-ratio: 1.4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
