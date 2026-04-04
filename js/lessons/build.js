@@ -10,7 +10,7 @@
   }
 
   function start() {
-    app.state.build = { mission: 1, placed: {}, matched: [], promptIndex: 0 };
+    app.state.build = { mission: 1, placed: {}, matched: [], promptIndex: 0, celebrated: false, drawStrokes: 0 };
     render();
   }
 
@@ -42,7 +42,7 @@
       }).join("");
       body = '<div class="teacher-layout"><div class="teacher-stage"><div class="teacher-icon">⚡</div><h3 class="teacher-command">' + prompt.clue + '</h3><p class="teacher-subtext">Tap the right part. ' + (build.promptIndex + 1) + ' / ' + buildPrompts.length + '</p></div><div class="teacher-targets">' + targetHtml + '</div></div>';
     } else {
-      body = '<div class="win-panel"><h3>Computer Island complete!</h3><p>You built it, matched it, and tapped fast.</p></div>';
+      body = '<div class="win-panel build-finish-panel"><h3>Computer Island complete!</h3><p>You built it, matched it, and tapped fast. Draw a happy computer picture, then go back to the map.</p><div class="build-finish-draw"><canvas id="buildFinishCanvas" class="paint-canvas build-finish-canvas" width="820" height="320"></canvas></div><div class="choice-row"><button class="fun-button" type="button" id="buildClearBtn">Clear Drawing</button><button class="big-choice output-choice calm-button" type="button" id="buildMapBtn">Back To Map</button></div></div>';
     }
 
     app.dom.gameArea.innerHTML = '<div class="game-card">' + h.getCardHeader('<span class="pill">Estimated 8-10 min</span><span class="pill">Stars: ' + app.state.stars + '</span>') + h.getMissionStrip("Island Missions", "3 easy jobs: build, match, tap.", missions) + body + '</div>';
@@ -56,6 +56,25 @@
        (function(btn) {
          btn.addEventListener("click", function() { handlePrompt(btn.dataset.buildAnswer); });
        })(promptBtns[i]);
+    }
+
+    if (build.mission === 4) {
+      if (!build.celebrated) {
+        build.celebrated = true;
+        h.spawnConfetti(44, true);
+        h.showFeedback("Computer Island complete!", "success");
+      }
+      bindFinishCanvas();
+      var clearBtn = document.getElementById("buildClearBtn");
+      if (clearBtn) clearBtn.addEventListener("click", function() {
+        build.drawStrokes = 0;
+        bindFinishCanvas();
+      });
+      var mapBtn = document.getElementById("buildMapBtn");
+      if (mapBtn) mapBtn.addEventListener("click", function() {
+        if (app.showLessonMap) app.showLessonMap();
+        else if (app.checkin && app.checkin.renderWelcome) app.checkin.renderWelcome();
+      });
     }
   }
 
@@ -110,6 +129,51 @@
       h.showFeedback("Fast thinking!", "success");
     }
     render();
+  }
+
+  function bindFinishCanvas() {
+    var canvas = document.getElementById("buildFinishCanvas");
+    if (!canvas) return;
+    var context = canvas.getContext("2d");
+    context.fillStyle = "#f7fbff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.lineCap = "round";
+    context.lineJoin = "round";
+
+    var drawing = false;
+
+    canvas.addEventListener("pointerdown", function(event) {
+      drawing = true;
+      canvas.setPointerCapture(event.pointerId);
+      var point = getCanvasPoint(canvas, event);
+      context.beginPath();
+      context.moveTo(point.x, point.y);
+    });
+
+    canvas.addEventListener("pointermove", function(event) {
+      if (!drawing) return;
+      var point = getCanvasPoint(canvas, event);
+      context.strokeStyle = "#46b6f8";
+      context.lineWidth = 12;
+      context.lineTo(point.x, point.y);
+      context.stroke();
+      app.state.build.drawStrokes += 1;
+    });
+
+    var stop = function(event) {
+      drawing = false;
+      if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+    };
+    canvas.addEventListener("pointerup", stop);
+    canvas.addEventListener("pointercancel", stop);
+  }
+
+  function getCanvasPoint(canvas, event) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+      x: ((event.clientX - rect.left) / rect.width) * canvas.width,
+      y: ((event.clientY - rect.top) / rect.height) * canvas.height
+    };
   }
 
   app.lessons.build = { start: start, render: render, handleDrop: handleDrop };
