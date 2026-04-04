@@ -11,6 +11,11 @@
     app.state.onoff = {
       mission: 1,
       wakeHits: [],
+      plugConnected: false,
+      wakeStage: "plug",
+      wakeProgress: 0,
+      wakeTimer: null,
+      wakeBootTimer: null,
       stepOrder: [],
       holdPhase: "turn_on",
       holdValue: 0,
@@ -47,21 +52,17 @@
   }
 
   function renderWakeMission() {
-    var slots = wakeTargets.map(function(target) {
-      var done = app.state.onoff.wakeHits.indexOf(target.id) !== -1;
-      return '<div class="drop-zone onoff-wake-slot ' + (done ? "filled" : "") + '" data-zone="' + target.id + '">' +
-        '<strong>' + target.label + '</strong><p>' + (done ? "Ready!" : target.hint) + '</p></div>';
-    }).join("");
-    var cards = h.shuffleArray(wakeTargets.slice()).map(function(target) {
-      var used = app.state.onoff.wakeHits.indexOf(target.id) !== -1;
-      return '<div class="draggable-item ' + (used ? "placed" : "") + '" data-kind="onoff-wake" data-id="' + target.id + '">' +
-        '<span class="draggable-item-emoji">' + target.emoji + '</span><div><strong>' + target.label + '</strong><div>' + target.hint + '</div></div></div>';
-    }).join("");
-
+    var plugged = app.state.onoff.plugConnected;
+    var booting = app.state.onoff.wakeStage === "booting";
+    var progress = Math.min(app.state.onoff.wakeProgress, 100);
     return '<div class="build-layout">' +
-      '<div class="computer-board"><div class="onoff-hero-card">' + computerScene(app.state.onoff.wakeHits.indexOf("button") !== -1, app.state.onoff.wakeHits.indexOf("screen") !== -1) +
-      '<div class="onoff-speech">Drag the 3 power steps to wake the computer.</div></div><div class="drop-zone-grid onoff-wake-grid">' + slots + '</div></div>' +
-      '<div class="tray"><div class="pill">Mission 1 of 5</div><div class="draggable-list">' + cards + '</div><p class="hint">Drag each card to its matching power spot.</p></div>' +
+      '<div class="computer-board"><div class="onoff-hero-card onoff-power-scene">' + powerScene(plugged, booting, progress) +
+      '<div class="onoff-speech">' + (plugged ? (booting ? "The computer is starting up..." : "Now press the power button.") : "Drag the plug into the wall first.") + '</div></div></div>' +
+      '<div class="tray"><div class="pill">Mission 1 of 5</div><div class="draggable-list">' +
+      '<div class="draggable-item ' + (plugged ? "placed" : "") + '" data-kind="onoff-plug" data-id="plug"><span class="draggable-item-emoji">🔌</span><div><strong>Power Plug</strong><div>Drag into the wall socket.</div></div></div>' +
+      '</div><button class="big-choice onoff-power-button ' + (plugged ? "power-button-ready" : "power-button-off") + ' ' + (booting ? "power-button-booting" : "") + '" type="button" id="wakePowerBtn"' + (plugged ? "" : " disabled") + '>⏻</button>' +
+      '<div class="lesson-plan"><div class="lesson-chip">Plug ' + (plugged ? "done" : "first") + '</div><div class="lesson-chip">Power ' + (booting ? "starting" : (plugged ? "ready" : "wait")) + '</div></div>' +
+      '<p class="hint">1. Drag the plug into the wall. 2. Press the power button.</p></div>' +
       '</div>';
   }
 
@@ -142,6 +143,9 @@
       holdBtn.addEventListener("pointerleave", stopHold);
     }
 
+    var wakePowerBtn = document.getElementById("wakePowerBtn");
+    if (wakePowerBtn) wakePowerBtn.addEventListener("click", startWakeBoot);
+
     var menuBtn = document.getElementById("backToMenuBtn");
     if (menuBtn) menuBtn.addEventListener("click", function() { app.renderMainMenu(); });
   }
@@ -153,21 +157,14 @@
   }
 
   function handleDrop(kind, id, target) {
-    if (kind === "onoff-wake") {
-      if (!target || target.dataset.zone !== id) {
-        h.showFeedback("Try the matching power spot.", "error");
+    if (kind === "onoff-plug") {
+      if (!target || target.dataset.zone !== "wall-plug") {
+        h.showFeedback("Drag the plug into the wall socket.", "error");
         return;
       }
-      if (app.state.onoff.wakeHits.indexOf(id) === -1) {
-        app.state.onoff.wakeHits.push(id);
-      }
+      app.state.onoff.plugConnected = true;
       app.processAction('BUMP_STARS', { amount: 2 });
-      if (app.state.onoff.wakeHits.length >= wakeTargets.length) {
-        app.state.onoff.mission = 2;
-        h.showFeedback("The computer is waking up!", "success");
-      } else {
-        h.showFeedback("Great match!", "success");
-      }
+      h.showFeedback("Plug connected!", "success");
       render();
       return;
     }
@@ -226,6 +223,31 @@
     app.state.onoff.mission = 4;
     app.state.onoff.holdValue = 100;
     h.showFeedback("Power practice done!", "success");
+    render();
+  }
+
+  function startWakeBoot() {
+    if (!app.state.onoff.plugConnected || app.state.onoff.wakeStage === "booting") return;
+    app.state.onoff.wakeStage = "booting";
+    app.state.onoff.wakeProgress = 0;
+    clearInterval(app.state.onoff.wakeTimer);
+    clearTimeout(app.state.onoff.wakeBootTimer);
+    h.showFeedback("Power on...", "info");
+    app.state.onoff.wakeTimer = setInterval(function() {
+      app.state.onoff.wakeProgress += 2;
+      if (app.state.onoff.wakeProgress >= 100) {
+        clearInterval(app.state.onoff.wakeTimer);
+        app.state.onoff.wakeTimer = null;
+        app.processAction('BUMP_STARS', { amount: 3 });
+        h.showFeedback("Computer starting!", "success");
+        app.state.onoff.wakeBootTimer = setTimeout(function() {
+          app.state.onoff.mission = 2;
+          app.state.onoff.wakeHits = ["plug", "button", "screen"];
+          render();
+        }, 900);
+      }
+      render();
+    }, 100);
     render();
   }
 
@@ -328,6 +350,24 @@
       '<rect x="324" y="112" width="138" height="22" rx="11" fill="#fff"/>' +
       '<rect x="324" y="150" width="120" height="22" rx="11" fill="#fff"/>' +
       '<circle cx="134" cy="166" r="20" fill="#ffd84f"/><circle cx="188" cy="166" r="20" fill="#2ec27e"/></svg>';
+  }
+
+  function powerScene(plugged, booting, progress) {
+    var barWidth = Math.max(8, progress * 1.4);
+    return '<div class="onoff-power-layout">' +
+      '<svg viewBox="0 0 560 280" class="onoff-scene-svg" aria-hidden="true">' +
+      '<rect x="34" y="32" width="208" height="168" rx="28" fill="#355da6"/>' +
+      '<rect x="54" y="52" width="168" height="128" rx="20" fill="' + (booting ? '#091a33' : (plugged ? '#24324f' : '#13284a')) + '"/>' +
+      (booting ? '<rect x="78" y="76" width="120" height="12" rx="6" fill="#18355f"/><rect x="78" y="76" width="' + barWidth + '" height="12" rx="6" fill="url(#bootGrad)"/><circle cx="112" cy="126" r="24" fill="none" stroke="#7edcff" stroke-width="8" stroke-dasharray="18 10" class="boot-loader"/><text x="80" y="162" fill="#dff7ff" font-size="18" font-weight="700">Starting...</text>' : '<circle cx="112" cy="112" r="12" fill="' + (plugged ? '#ff6b6b' : '#5f6f92') + '"/><text x="82" y="156" fill="#dff7ff" font-size="18" font-weight="700">' + (plugged ? 'Ready' : 'No power') + '</text>') +
+      '<rect x="112" y="204" width="54" height="18" rx="8" fill="#ffcf77"/><rect x="88" y="222" width="102" height="12" rx="6" fill="#7f9aca"/>' +
+      '<rect x="346" y="92" width="62" height="88" rx="16" fill="#f8fbff"/><circle cx="376" cy="120" r="9" fill="' + (plugged ? '#5be37f' : '#f3a9b6') + '"/><rect x="360" y="142" width="12" height="24" rx="5" fill="#cfd9ea"/><rect x="382" y="142" width="12" height="24" rx="5" fill="#cfd9ea"/>' +
+      '<path d="M408 136 C 462 136, 462 196, 516 196" fill="none" stroke="' + (plugged ? '#ffd84f' : '#8798bd') + '" stroke-width="10" stroke-linecap="round"/>' +
+      '<path d="M516 196v20" fill="none" stroke="' + (plugged ? '#ffd84f' : '#8798bd') + '" stroke-width="10" stroke-linecap="round"/>' +
+      '<path d="M498 196v20" fill="none" stroke="' + (plugged ? '#ffd84f' : '#8798bd') + '" stroke-width="10" stroke-linecap="round"/>' +
+      '<defs><linearGradient id="bootGrad" x1="0" x2="1"><stop offset="0%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#58e46f"/></linearGradient></defs>' +
+      '</svg>' +
+      '<div class="drop-zone onoff-wall-socket ' + (plugged ? "filled" : "") + '" data-zone="wall-plug"><strong>Wall Plug</strong><p>' + (plugged ? "Connected!" : "Drop plug here") + '</p></div>' +
+      '</div>';
   }
 
   app.lessons.onoff = { start: start, render: render, handleDrop: handleDrop };
