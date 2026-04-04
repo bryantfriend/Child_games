@@ -2,169 +2,126 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ICT Adventure Island</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🌴 ICT Adventure Island</title>
+  <meta name="description" content="A fun and educational touch-based web app game where students explore ICT parts.">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="sky-decor" aria-hidden="true">
-    <svg class="cloud cloud-one" viewBox="0 0 220 110">
-      <path d="M43 81h121c27 0 41-31 23-49-5-5-13-9-23-9h-5C153 9 140 2 124 2c-24 0-43 15-49 37h-3C50 39 32 56 32 76c0 3 0 4 11 5z" fill="#fff"/>
-    </svg>
-    <svg class="cloud cloud-two" viewBox="0 0 220 110">
-      <path d="M43 81h121c27 0 41-31 23-49-5-5-13-9-23-9h-5C153 9 140 2 124 2c-24 0-43 15-49 37h-3C50 39 32 56 32 76c0 3 0 4 11 5z" fill="#fff"/>
-    </svg>
-    <button class="silly-friend silly-star" id="sillyStar" type="button" aria-label="Tap the star">
-      <svg viewBox="0 0 120 120">
-        <path d="M60 8l13 31 33 3-25 21 8 32-29-17-29 17 8-32L14 42l33-3z" fill="#ffd84f" stroke="#ffb703" stroke-width="6"/>
-        <circle cx="47" cy="53" r="4" fill="#174066"/>
-        <circle cx="73" cy="53" r="4" fill="#174066"/>
-        <path d="M45 69c10 10 20 10 30 0" fill="none" stroke="#174066" stroke-linecap="round" stroke-width="5"/>
-      </svg>
-    </button>
-    <button class="silly-friend silly-fish" id="sillyFish" type="button" aria-label="Tap the fish">
-      <svg viewBox="0 0 150 90">
-        <ellipse cx="68" cy="46" rx="42" ry="24" fill="#ff8fab"/>
-        <path d="M108 46l31-20v40z" fill="#ff5d8f"/>
-        <circle cx="53" cy="41" r="4" fill="#174066"/>
-        <path d="M45 56c7 7 15 7 22 0" fill="none" stroke="#174066" stroke-linecap="round" stroke-width="4"/>
-        <path d="M29 39c-10-4-16-3-22 5 9 2 14 4 18 11" fill="#ffd166"/>
-      </svg>
-    </button>
+
+  <div id="game-container">
+    <div id="confettiLayer"></div>
+    <div id="feedbackBanner" class="feedback-banner"></div>
+
+    <!-- HUD / Scoreboard -->
+    <div id="hud">
+      <div class="score-pill">
+        <span class="icon">⭐</span>
+        <span id="starCount">0</span>
+      </div>
+      <div class="score-pill">
+        <span class="icon">🏆</span>
+        <span id="completedCount">0 / 4</span>
+      </div>
+    </div>
+    
+    <!-- Main Map Screen -->
+    <div id="map-screen">
+      <div class="header-banner">
+        <h1>🌴 ICT Adventure Island</h1>
+        <button id="menuHomeBtn" class="menu-home-button" type="button">📚 Choose Lesson</button>
+      </div>
+      
+      <div class="islands-container">
+        <!-- Build Island -->
+        <button class="island-card" data-game="build">
+          <div class="island-view">
+            <span class="icon-big">🖥️</span>
+            <div class="status-dot"></div>
+          </div>
+          <span class="label">Computer Island</span>
+        </button>
+        
+        <!-- Input Island -->
+        <button class="island-card" data-game="input">
+          <div class="island-view">
+            <span class="icon-big">🧠</span>
+            <div class="status-dot"></div>
+          </div>
+          <span class="label">Input Island</span>
+        </button>
+        
+        <!-- Output Island -->
+        <button class="island-card" data-game="output">
+          <div class="island-view">
+            <span class="icon-big">📺</span>
+            <div class="status-dot"></div>
+          </div>
+          <span class="label">Output Island</span>
+        </button>
+        
+        <!-- Challenge Island -->
+        <button class="island-card" data-game="challenge">
+          <div class="island-view">
+            <span class="icon-big">🎯</span>
+            <div class="status-dot"></div>
+          </div>
+          <span class="label">Challenge Island</span>
+        </button>
+
+        <!-- Fun Zone (Locked until 100 stars) -->
+        <button class="island-card locked-island" data-game="fun" id="funBtn">
+          <div class="island-view">
+            <span class="icon-big">🎉</span>
+            <div class="lock-icon">🔒</div>
+          </div>
+          <span class="label">Fun Zone</span>
+        </button>
+      </div>
+
+      <!-- Silly Decorations -->
+      <div id="sillyStar" class="silly-friend star-friend">⭐</div>
+      <div id="sillyFish" class="silly-friend fish-friend">🐠</div>
+      
+      <div class="footer-hint">
+        Lesson 1 map: tap an island to play. Use Choose Lesson for Lesson 2 or Games.
+      </div>
+    </div>
+
+    <!-- Mini-Game Area / Lesson Overlay -->
+    <div id="game-overlay">
+      <div id="gameArea" class="lesson-surface">
+        <!-- JS injects here: panelTitle, panelSubtitle, game content -->
+        <div class="lesson-header">
+           <h2 id="panelTitle">Loading...</h2>
+           <p id="panelSubtitle">Starting your adventure.</p>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <div class="app-shell">
-    <header class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow">Touch, Sort, Build, and Play</p>
-        <h1>ICT Adventure Island</h1>
-        <p class="hero-text">Tap, drag, and play. Learn easy computer words.</p>
-      </div>
-      <div class="hero-illustration" aria-hidden="true">
-        <svg viewBox="0 0 260 160">
-          <defs>
-            <linearGradient id="islandSand" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#ffe597"/>
-              <stop offset="100%" stop-color="#ffc857"/>
-            </linearGradient>
-            <linearGradient id="islandSea" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#7dd3fc"/>
-              <stop offset="100%" stop-color="#22b8cf"/>
-            </linearGradient>
-          </defs>
-          <rect x="0" y="82" width="260" height="78" rx="24" fill="url(#islandSea)"/>
-          <ellipse cx="130" cy="92" rx="88" ry="28" fill="url(#islandSand)"/>
-          <rect x="124" y="52" width="14" height="42" rx="7" fill="#8d5524"/>
-          <path d="M131 34c-15 0-21 17-13 28 5-7 14-11 21-11 9 0 17 4 22 11 8-11 2-28-13-28-5 0-10 2-17 7z" fill="#2ec27e"/>
-          <circle cx="57" cy="47" r="22" fill="#ffdd57"/>
-          <g transform="translate(84 83)">
-            <rect x="0" y="-23" width="44" height="30" rx="5" fill="#174066"/>
-            <rect x="4" y="-19" width="36" height="22" rx="3" fill="#8de7ff"/>
-            <rect x="16" y="7" width="12" height="7" rx="3" fill="#174066"/>
-          </g>
-          <g transform="translate(154 93)">
-            <rect x="0" y="-18" width="45" height="10" rx="5" fill="#ffffff"/>
-            <rect x="2" y="-16" width="4" height="6" rx="2" fill="#174066"/>
-            <rect x="9" y="-16" width="4" height="6" rx="2" fill="#174066"/>
-            <rect x="16" y="-16" width="4" height="6" rx="2" fill="#174066"/>
-            <rect x="23" y="-16" width="4" height="6" rx="2" fill="#174066"/>
-          </g>
-          <circle cx="208" cy="108" r="11" fill="#ff8fab"/>
-          <path d="M219 108l18-11v22z" fill="#ff5d8f"/>
-        </svg>
-      </div>
-      <div class="scoreboard" aria-live="polite">
-        <div class="score-card">
-          <span class="score-label">Stars</span>
-          <strong id="starCount">0</strong>
-        </div>
-        <div class="score-card">
-          <span class="score-label">Completed</span>
-          <strong id="completedCount">0 / 4</strong>
-        </div>
-      </div>
-    </header>
-
-    <main id="game" class="game-layout">
-      <section class="map-panel">
-        <div class="section-heading">
-          <h2>Island Map</h2>
-          <p>Tap an island to play.</p>
-        </div>
-        <div class="map-scene" aria-hidden="true">
-          <svg viewBox="0 0 320 170">
-            <rect x="0" y="92" width="320" height="78" rx="28" fill="#5fd3f3"/>
-            <ellipse cx="78" cy="103" rx="54" ry="23" fill="#ffd166"/>
-            <ellipse cx="162" cy="78" rx="46" ry="20" fill="#ffe28a"/>
-            <ellipse cx="244" cy="104" rx="56" ry="24" fill="#ffc857"/>
-            <ellipse cx="283" cy="67" rx="31" ry="15" fill="#ffe597"/>
-            <rect x="69" y="65" width="8" height="28" rx="4" fill="#8d5524"/>
-            <rect x="158" y="44" width="8" height="28" rx="4" fill="#8d5524"/>
-            <rect x="239" y="72" width="8" height="28" rx="4" fill="#8d5524"/>
-            <path d="M73 56c-9 0-13 10-8 17 3-4 8-6 12-6 6 0 10 2 13 6 5-7 1-17-7-17-3 0-6 1-10 4z" fill="#2ec27e"/>
-            <path d="M162 35c-10 0-15 11-9 19 3-5 9-7 14-7 6 0 11 2 14 7 6-8 1-19-9-19-4 0-7 1-10 5z" fill="#2ec27e"/>
-            <path d="M243 63c-10 0-14 10-8 17 3-4 8-6 12-6 5 0 10 2 13 6 5-7 1-17-8-17-4 0-6 1-9 4z" fill="#2ec27e"/>
-            <circle cx="33" cy="38" r="16" fill="#ffdd57"/>
-            <path d="M263 118c8 0 14 4 17 11-9 5-17 6-29 0 3-7 7-11 12-11z" fill="#ff8fab"/>
-          </svg>
-        </div>
-        <div id="map" class="island-grid" aria-label="Adventure islands">
-          <button class="island-card island-computer" data-game="build">
-            <span class="island-emoji"><img src="assets/computer.svg" alt="Computer" class="svg-icon map-computer-icon"></span>
-            <span class="island-name">Computer Island</span>
-            <span class="island-task">Build it</span>
-          </button>
-          <button class="island-card island-input" data-game="input">
-            <span class="island-emoji">🧠</span>
-            <span class="island-name">Input Island</span>
-            <span class="island-task">Sort it</span>
-          </button>
-          <button class="island-card island-output" data-game="output">
-            <span class="island-emoji">📺</span>
-            <span class="island-name">Output Island</span>
-            <span class="island-task">Pick the job</span>
-          </button>
-          <button class="island-card island-challenge" data-game="challenge">
-            <span class="island-emoji">🎯</span>
-            <span class="island-name">Challenge Island</span>
-            <span class="island-task">Teacher Says!</span>
-          </button>
-          <button class="island-card island-fun" data-game="fun">
-            <span class="island-emoji">🎉</span>
-            <span class="island-name">Fun Zone</span>
-            <span class="island-task">100 stars</span>
-          </button>
-        </div>
-      </section>
-
-      <section class="play-panel">
-        <div class="section-heading">
-          <h2 id="panelTitle">Welcome, explorer!</h2>
-          <p id="panelSubtitle">Pick an island to start your ICT adventure.</p>
-        </div>
-
-        <div id="feedbackBanner" class="feedback-banner" aria-live="assertive"></div>
-        <div id="gameArea" class="game-area"></div>
-      </section>
-    </main>
-  </div>
-
-  <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
-
-  <script defer src="js/core.js"></script>
-  <script defer src="js/data.js"></script>
-  <script defer src="js/drag.js"></script>
-  <script defer src="js/checkin.js"></script>
-  <script defer src="js/lessons/build.js"></script>
-  <script defer src="js/lessons/input.js"></script>
-  <script defer src="js/lessons/output.js"></script>
-  <script defer src="js/lessons/challenge.js"></script>
-  <script defer src="js/fun/hub.js"></script>
-  <script defer src="js/fun/mouse-chase.js"></script>
-  <script defer src="js/fun/keyboard-smash.js"></script>
-  <script defer src="js/fun/fix-computer.js"></script>
-  <script defer src="js/fun/screen-defender.js"></script>
-  <script defer src="js/fun/power-up.js"></script>
-  <script defer src="js/main.js"></script>
+  <!-- Modular Scripts -->
+  <script src="js/core.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/drag.js"></script>
+  <script src="js/checkin.js"></script>
+  
+  <!-- Lessons -->
+  <script src="js/lessons/build.js"></script>
+  <script src="js/lessons/input.js"></script>
+  <script src="js/lessons/output.js"></script>
+  <script src="js/lessons/challenge.js"></script>
+  <script src="js/lessons/onoff.js"></script>
+  
+  <!-- Fun Zone -->
+  <script src="js/fun/hub.js"></script>
+  <script src="js/fun/mouse-chase.js"></script>
+  <script src="js/fun/keyboard-smash.js"></script>
+  <script src="js/fun/fix-computer.js"></script>
+  <script src="js/fun/screen-defender.js"></script>
+  <script src="js/fun/power-up.js"></script>
+  
+  <script src="js/main.js"></script>
 </body>
 </html>

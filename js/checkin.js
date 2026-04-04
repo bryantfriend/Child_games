@@ -1,85 +1,115 @@
 (function () {
-  const app = window.ICTApp;
-  const { moodChoices, emojiGameRounds, calmSteps } = app.data;
-  const { showFeedback, bumpStars, spawnConfetti, setIslandAccess, updateRenderHooks } = app.helpers;
+  var app = window.ICTApp = window.ICTApp || {};
+  var moodChoices = app.data.moodChoices;
+  var emojiGameRounds = app.data.emojiGameRounds;
+  var calmSteps = app.data.calmSteps;
+  var h = app.helpers;
 
   function renderWelcome() {
-    app.state.currentGame = null;
-    app.dom.panelTitle.textContent = "Welcome, explorer!";
-    app.dom.panelSubtitle.textContent =
-      app.state.checkIn.path === "pick" ? "First, choose a face." :
-      app.state.checkIn.path === "emoji" ? "Face game time." :
-      app.state.checkIn.path === "mindful" ? "Calm body. Calm mind." :
-      "You are ready to start.";
-    setIslandAccess();
+    app.processAction('SET_GAME', { id: null });
+    if (app.dom.panelTitle) app.dom.panelTitle.textContent = "Welcome, explorer!";
+    
+    var subtext = "";
+    if (app.state.checkIn.path === "pick") subtext = "First, choose a face.";
+    else if (app.state.checkIn.path === "emoji") subtext = "Face game time.";
+    else if (app.state.checkIn.path === "mindful") subtext = "Calm body. Calm mind.";
+    else subtext = "You are ready to start.";
+    if (app.dom.panelSubtitle) app.dom.panelSubtitle.textContent = subtext;
+
+    document.getElementById("game-overlay").style.display = "flex";
+    h.setIslandAccess();
 
     if (app.state.checkIn.path === "pick") {
-      app.dom.gameArea.innerHTML = `<div class="welcome-card"><div class="welcome-stack"><strong>😊</strong><h3>How are you?</h3><p class="hero-text">Tap the face that feels right.</p><div class="emoji-grid">${moodChoices.map((mood) => `<button class="emoji-choice" type="button" data-mood="${mood.id}"><span class="emoji-face">${mood.emoji}</span><span>${mood.label}</span></button>`).join("")}</div></div></div>`;
-      app.dom.gameArea.querySelectorAll("[data-mood]").forEach((button) => button.addEventListener("click", () => handleMoodChoice(button.dataset.mood)));
-      return;
+       var moodHtml = moodChoices.map(function(mood) {
+         return '<button class="emoji-choice" type="button" data-mood="' + mood.id + '"><span class="emoji-face">' + mood.emoji + '</span><span>' + mood.label + '</span></button>';
+       }).join("");
+       app.dom.gameArea.innerHTML = '<div class="welcome-card"><div class="welcome-stack"><strong>😊</strong><h3>How are you?</h3><p class="hero-text">Tap the face that feels right.</p><div class="emoji-grid">' + moodHtml + '</div></div></div>';
+       var moodBtns = app.dom.gameArea.querySelectorAll("[data-mood]");
+       var i;
+       for (i = 0; i < moodBtns.length; i++) {
+         (function(btn) {
+           btn.addEventListener("click", function() { handleMoodChoice(btn.dataset.mood); });
+         })(moodBtns[i]);
+       }
+       return;
     }
 
     if (app.state.checkIn.path === "emoji") {
-      const round = emojiGameRounds[app.state.checkIn.emojiRound];
-      const mood = moodChoices.find((entry) => entry.id === app.state.checkIn.mood);
-      app.dom.gameArea.innerHTML = `<div class="welcome-card"><div class="welcome-stack"><strong>${mood?.emoji || "😄"}</strong><h3>Emoji Game</h3><p class="hero-text">Tap this face: <span class="target-emoji">${round.target}</span></p><div class="emoji-grid mini-game-grid">${app.helpers.shuffleArray([...round.options]).map((emoji) => `<button class="emoji-choice emoji-target" type="button" data-emoji-game="${emoji}"><span class="emoji-face">${emoji}</span></button>`).join("")}</div><div class="lesson-plan"><div class="lesson-chip">Round ${app.state.checkIn.emojiRound + 1} / ${emojiGameRounds.length}</div></div></div></div>`;
-      app.dom.gameArea.querySelectorAll("[data-emoji-game]").forEach((button) => button.addEventListener("click", () => handleEmojiGame(button.dataset.emojiGame)));
-      return;
+       var round = emojiGameRounds[app.state.checkIn.emojiRound];
+       var mood = moodChoices.filter(function(m) { return m.id === app.state.checkIn.mood; })[0];
+       var emojiHtml = h.shuffleArray(round.options.slice()).map(function(emoji) {
+         return '<button class="emoji-choice emoji-target" type="button" data-emoji-game="' + emoji + '"><span class="emoji-face">' + emoji + '</span></button>';
+       }).join("");
+       app.dom.gameArea.innerHTML = '<div class="welcome-card"><div class="welcome-stack"><strong>' + (mood ? mood.emoji : "😄") + '</strong><h3>Emoji Game</h3><p class="hero-text">Tap this face: <span class="target-emoji">' + round.target + '</span></p><div class="emoji-grid mini-game-grid">' + emojiHtml + '</div><div class="lesson-plan"><div class="lesson-chip">Round ' + (app.state.checkIn.emojiRound + 1) + ' / ' + emojiGameRounds.length + '</div></div></div></div>';
+       var emojiBtns = app.dom.gameArea.querySelectorAll("[data-emoji-game]");
+       var j;
+       for (j = 0; j < emojiBtns.length; j++) {
+         (function(btn) {
+           btn.addEventListener("click", function() { handleEmojiGame(btn.dataset.emojiGame); });
+         })(emojiBtns[j]);
+       }
+       return;
     }
 
     if (app.state.checkIn.path === "mindful") {
-      const step = calmSteps[app.state.checkIn.calmStep];
-      app.dom.gameArea.innerHTML = `<div class="welcome-card"><div class="welcome-stack"><strong>${step.emoji}</strong><h3>Calm Time</h3><p class="hero-text">${step.title}</p><div class="mindful-bubble"><div class="bubble-ring"></div><div class="bubble-core">${step.emoji}</div></div><p class="question-text">${step.text}</p><button class="big-choice input-choice calm-button" type="button" id="calmNextBtn">Done</button><div class="lesson-plan"><div class="lesson-chip">Step ${app.state.checkIn.calmStep + 1} / ${calmSteps.length}</div></div></div></div>`;
-      document.getElementById("calmNextBtn")?.addEventListener("click", handleCalmStep);
-      return;
+       var step = calmSteps[app.state.checkIn.calmStep];
+       app.dom.gameArea.innerHTML = '<div class="welcome-card"><div class="welcome-stack"><strong>' + step.emoji + '</strong><h3>Calm Time</h3><p class="hero-text">' + step.title + '</p><div class="mindful-bubble"><div class="bubble-ring"></div><div class="bubble-core">' + step.emoji + '</div></div><p class="question-text">' + step.text + '</p><button class="big-choice input-choice calm-button" type="button" id="calmNextBtn">Done</button><div class="lesson-plan"><div class="lesson-chip">Step ' + (app.state.checkIn.calmStep + 1) + ' / ' + calmSteps.length + '</div></div></div></div>';
+       var nextBtn = document.getElementById("calmNextBtn");
+       if (nextBtn) nextBtn.addEventListener("click", handleCalmStep);
+       return;
     }
 
-    app.dom.gameArea.innerHTML = `<div class="welcome-card"><div class="welcome-stack"><strong>🌴</strong><h3>Adventure Map Ready</h3><p class="hero-text">Nice job. Now pick an island.</p><div class="lesson-plan"><div class="lesson-chip">Build</div><div class="lesson-chip">Sort</div><div class="lesson-chip">Choose</div><div class="lesson-chip">Teacher Says</div><div class="lesson-chip">Fun Zone</div></div><button class="big-choice output-choice calm-button" type="button" id="startLessonBtn">Start Lesson</button></div></div>`;
-    document.getElementById("startLessonBtn")?.addEventListener("click", () => showFeedback("Pick an island to play!", "success"));
+    app.dom.gameArea.innerHTML = '<div class="welcome-card"><div class="welcome-stack"><strong>🌴</strong><h3>You are ready!</h3><p class="hero-text">Now choose Lesson 1, Lesson 2, or Games.</p><div class="lesson-plan"><div class="lesson-chip">Lesson 1</div><div class="lesson-chip">Lesson 2</div><div class="lesson-chip">Games</div></div><button class="big-choice output-choice calm-button" type="button" id="startLessonBtn">Choose Lesson</button></div></div>';
+    var startBtn = document.getElementById("startLessonBtn");
+    if (startBtn) {
+      startBtn.addEventListener("click", function() {
+        if (app.renderMainMenu) app.renderMainMenu();
+        else {
+          document.getElementById("game-overlay").style.display = "none";
+          h.showFeedback("Pick a lesson to play!", "success");
+        }
+      });
+    }
   }
 
   function handleMoodChoice(moodId) {
-    const mood = moodChoices.find((entry) => entry.id === moodId);
-    app.state.checkIn.mood = mood.id;
-    app.state.checkIn.emojiRound = 0;
-    app.state.checkIn.calmStep = 0;
-    app.state.checkIn.path = mood.path;
-    showFeedback(mood.path === "emoji" ? "Let’s play a face game!" : "Let’s get calm first.", "info");
+    var mood = moodChoices.filter(function(m) { return m.id === moodId; })[0];
+    app.processAction('UPDATE_CHECKIN', { mood: mood.id, emojiRound: 0, calmStep: 0, path: mood.path });
+    h.showFeedback(mood.path === "emoji" ? "Let’s play a face game!" : "Let’s get calm first.", "info");
     renderWelcome();
-    updateRenderHooks();
   }
 
   function handleEmojiGame(choice) {
-    const round = emojiGameRounds[app.state.checkIn.emojiRound];
+    var round = emojiGameRounds[app.state.checkIn.emojiRound];
     if (choice !== round.target) {
-      showFeedback("Try again!", "error");
+      h.showFeedback("Try again!", "error");
       return;
     }
-    bumpStars(1);
-    showFeedback("Yes! Nice face!", "success");
-    app.state.checkIn.emojiRound += 1;
-    if (app.state.checkIn.emojiRound >= emojiGameRounds.length) {
-      app.state.checkIn.path = "done";
-      app.state.checkIn.ready = true;
-      spawnConfetti(28, false);
-      showFeedback("You are ready to learn!", "success");
+    app.processAction('BUMP_STARS', { amount: 1 });
+    h.showFeedback("Yes! Nice face!", "success");
+    var nextRound = app.state.checkIn.emojiRound + 1;
+    if (nextRound >= emojiGameRounds.length) {
+      app.processAction('UPDATE_CHECKIN', { path: "done", ready: true });
+      h.spawnConfetti(28, false);
+      h.showFeedback("You are ready to learn!", "success");
+    } else {
+      app.processAction('UPDATE_CHECKIN', { emojiRound: nextRound });
     }
     renderWelcome();
-    updateRenderHooks();
   }
 
   function handleCalmStep() {
-    bumpStars(1);
-    showFeedback("Good calm job.", "success");
-    app.state.checkIn.calmStep += 1;
-    if (app.state.checkIn.calmStep >= calmSteps.length) {
-      app.state.checkIn.path = "done";
-      app.state.checkIn.ready = true;
-      spawnConfetti(20, false);
-      showFeedback("Now you are ready.", "success");
+    app.processAction('BUMP_STARS', { amount: 1 });
+    h.showFeedback("Good calm job.", "success");
+    var nextStep = app.state.checkIn.calmStep + 1;
+    if (nextStep >= calmSteps.length) {
+      app.processAction('UPDATE_CHECKIN', { path: "done", ready: true });
+      h.spawnConfetti(20, false);
+      h.showFeedback("Now you are ready.", "success");
+    } else {
+      app.processAction('UPDATE_CHECKIN', { calmStep: nextStep });
     }
     renderWelcome();
-    updateRenderHooks();
   }
 
   app.checkin.renderWelcome = renderWelcome;

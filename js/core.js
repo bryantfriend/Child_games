@@ -1,9 +1,9 @@
 (function () {
-  const app = window.ICTApp = window.ICTApp || {};
+  var app = window.ICTApp = window.ICTApp || {};
 
   app.state = {
     stars: 0,
-    completed: new Set(),
+    completed: [], // No Set to avoid spread issues in old JS
     currentGame: null,
     feedbackTimeout: null,
     drag: null,
@@ -11,9 +11,11 @@
     input: {},
     output: {},
     challenge: {},
-    fun: { timers: [] },
+    onoff: {},
+    fun: { timers: [], mode: "hub" },
     sillyTaps: 0,
     checkIn: { mood: null, path: "pick", emojiRound: 0, calmStep: 0, ready: false },
+    freePlay: false,
   };
 
   app.lessons = {};
@@ -31,9 +33,12 @@
   };
 
   function shuffleArray(items) {
-    for (let index = items.length - 1; index > 0; index -= 1) {
-      const swapIndex = Math.floor(Math.random() * (index + 1));
-      [items[index], items[swapIndex]] = [items[swapIndex], items[index]];
+    var index, swapIndex, temp;
+    for (index = items.length - 1; index > 0; index -= 1) {
+      swapIndex = Math.floor(Math.random() * (index + 1));
+      temp = items[index];
+      items[index] = items[swapIndex];
+      items[swapIndex] = temp;
     }
     return items;
   }
@@ -42,26 +47,31 @@
     return items[Math.floor(Math.random() * items.length)];
   }
 
-  function renderIcon(item, className = "") {
+  function renderIcon(item, className) {
+    var cls = className || "";
     if (item.asset) {
-      return `<img src="${item.asset}" alt="${item.label}" class="svg-icon ${className}">`;
+      return '<img src="' + item.asset + '" alt="' + item.label + '" class="svg-icon ' + cls + '">';
     }
-    return `<span class="${className}">${item.emoji}</span>`;
+    return '<span class="' + cls + '">' + item.emoji + '</span>';
   }
 
   function playTone(tone) {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    var AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return;
     if (!playTone.context) playTone.context = new AudioContextClass();
-    const context = playTone.context;
-    if (context.state === "suspended") context.resume().catch(() => {});
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
+    var context = playTone.context;
+    if (context.state === "suspended") context.resume();
+    var oscillator = context.createOscillator();
+    var gain = context.createGain();
     oscillator.connect(gain);
     gain.connect(context.destination);
-    const now = context.currentTime;
-    const notes = { success: [660, 880], error: [220, 180], info: [520, 620] };
-    (notes[tone] || notes.info).forEach((frequency, index) => oscillator.frequency.setValueAtTime(frequency, now + index * 0.08));
+    var now = context.currentTime;
+    var notes = { success: [660, 880], error: [220, 180], info: [520, 620] };
+    var freqList = notes[tone] || notes.info;
+    var i;
+    for (i = 0; i < freqList.length; i++) {
+       oscillator.frequency.setValueAtTime(freqList[i], now + i * 0.08);
+    }
     oscillator.type = tone === "error" ? "square" : "triangle";
     gain.gain.setValueAtTime(0.001, now);
     gain.gain.exponentialRampToValueAtTime(0.08, now + 0.02);
@@ -71,131 +81,188 @@
   }
 
   function spawnConfetti(count, bigBurst) {
-    const layer = app.dom.confettiLayer;
+    var layer = app.dom.confettiLayer;
     if (!layer) return;
-    for (let index = 0; index < count; index += 1) {
-      const piece = document.createElement("div");
+    var index, piece;
+    for (index = 0; index < count; index += 1) {
+      piece = document.createElement("div");
       piece.className = "confetti-piece";
-      piece.style.left = `${Math.random() * 100}%`;
+      piece.style.left = (Math.random() * 100) + "%";
       piece.style.background = app.data.confettiColors[index % app.data.confettiColors.length];
-      piece.style.animationDuration = `${bigBurst ? 2.6 + Math.random() * 1.2 : 1.4 + Math.random() * 0.9}s`;
-      piece.style.animationDelay = `${Math.random() * 0.25}s`;
-      piece.style.transform = `rotate(${Math.random() * 360}deg) scale(${0.7 + Math.random() * 0.8})`;
+      piece.style.animationDuration = (bigBurst ? 2.6 + Math.random() * 1.2 : 1.4 + Math.random() * 0.9) + "s";
+      piece.style.animationDelay = (Math.random() * 0.25) + "s";
+      piece.style.transform = "rotate(" + (Math.random() * 360) + "deg) scale(" + (0.7 + Math.random() * 0.8) + ")";
       layer.appendChild(piece);
-      setTimeout(() => piece.remove(), 4200);
+      (function(p) {
+        setTimeout(function() { if (p.parentNode) p.parentNode.removeChild(p); }, 4200);
+      })(piece);
     }
   }
 
   function showFeedback(message, tone) {
-    const banner = app.dom.feedbackBanner;
+    var banner = app.dom.feedbackBanner;
+    if (!banner) return;
     banner.textContent = message;
-    banner.className = `feedback-banner show feedback-${tone}${tone === "success" ? " party" : ""}`;
+    banner.className = "feedback-banner show feedback-" + tone + (tone === "success" ? " party" : "");
     playTone(tone);
     clearTimeout(app.state.feedbackTimeout);
-    app.state.feedbackTimeout = setTimeout(() => { banner.className = "feedback-banner"; }, 1500);
+    app.state.feedbackTimeout = setTimeout(function () { banner.className = "feedback-banner"; }, 1500);
   }
 
   function clearFunTimers() {
-    (app.state.fun.timers || []).forEach((timer) => {
-      if (timer.kind === "timeout") clearTimeout(timer.id);
-      else clearInterval(timer.id);
-    });
+    var timers = app.state.fun.timers || [];
+    var i;
+    for (i = 0; i < timers.length; i++) {
+      if (timers[i].kind === "timeout") clearTimeout(timers[i].id);
+      else clearInterval(timers[i].id);
+    }
     app.state.fun.timers = [];
   }
 
   function addFunTimer(id, kind) {
-    app.state.fun.timers.push({ id, kind });
+    app.state.fun.timers.push({ id: id, kind: kind });
     return id;
   }
 
   function setIslandAccess() {
-    document.querySelectorAll(".island-card").forEach((button) => {
-      const needsCheckIn = !app.state.checkIn.ready;
-      const needsStars = button.dataset.game === "fun" && app.state.stars < 100;
-      const locked = needsCheckIn || needsStars;
+    var buttons = document.querySelectorAll(".island-card");
+    var i, button, needsCheckIn, needsStars, locked;
+    for (i = 0; i < buttons.length; i++) {
+      button = buttons[i];
+      needsCheckIn = !app.state.checkIn.ready;
+      needsStars = button.dataset.game === "fun" && app.state.stars < 100 && !app.state.freePlay;
+      locked = (needsCheckIn || needsStars);
       button.disabled = locked;
-      button.classList.toggle("locked-island", locked);
-    });
+      if (locked) button.classList.add("locked-island");
+      else button.classList.remove("locked-island");
+    }
   }
 
   function updateScoreboard() {
-    app.dom.starCount.textContent = String(app.state.stars);
-    app.dom.completedCount.textContent = `${app.state.completed.size} / 4`;
+    if (app.dom.starCount) app.dom.starCount.textContent = String(app.state.stars);
+    if (app.dom.completedCount) app.dom.completedCount.textContent = app.state.completed.length + " / 5";
     setIslandAccess();
-    if (app.state.stars === 100) {
+    if (app.state.stars >= 100 && !app.state.freePlay) {
       showFeedback("Fun Zone unlocked!", "success");
       spawnConfetti(60, true);
+      app.state.freePlay = true;
     }
-  }
-
-  function bumpStars(amount) {
-    app.state.stars += amount;
-    updateScoreboard();
-  }
-
-  function completeGame(id) {
-    if (!app.state.completed.has(id)) {
-      app.state.completed.add(id);
-      app.state.stars += 25;
-      updateScoreboard();
-      showFeedback("Island complete! +25 stars!", "success");
-      spawnConfetti(42, true);
-    }
-  }
-
-  function getCardHeader(extra = "", backId = "backToMap", label = "⬅ Map") {
-    return `<div class="card-header"><button class="back-button" type="button" id="${backId}">${label}</button><div class="progress-row">${extra}</div></div>`;
-  }
-
-  function getMissionStrip(title, text, missions) {
-    return `<div class="mission-strip"><div><h3>${title}</h3><p>${text}</p></div><div class="lesson-plan">${missions.map((mission) => `<div class="lesson-chip ${mission.done ? "chip-done" : ""}">${mission.label}</div>`).join("")}</div></div>`;
-  }
-
-  function bindBackToMap() {
-    document.getElementById("backToMap")?.addEventListener("click", () => {
-      clearFunTimers();
-      app.checkin.renderWelcome();
-      updateRenderHooks();
-    });
-  }
-
-  function buildRenderState() {
-    return {
-      mode: app.state.currentGame || "map",
-      stars: app.state.stars,
-      completed: Array.from(app.state.completed),
-      build: { mission: app.state.build.mission || 0, placed: { ...(app.state.build.placed || {}) }, matched: [...(app.state.build.matched || [])], promptIndex: app.state.build.promptIndex || 0 },
-      input: { mission: app.state.input.mission || 0, remaining: (app.state.input.remaining || []).map((item) => item.id), scenarioIndex: app.state.input.scenarioIndex || 0, rushIndex: app.state.input.rushIndex || 0, rushScore: app.state.input.rushScore || 0, rushCurrent: app.state.input.rushQueue?.[app.state.input.rushIndex]?.id || null },
-      output: { mission: app.state.output.mission || 0, questionIndex: app.state.output.questionIndex || 0, scenarioIndex: app.state.output.scenarioIndex || 0, badges: app.state.output.badges || 0 },
-      challenge: { round: app.state.challenge.round || 0, lives: app.state.challenge.lives || 0, streak: app.state.challenge.streak || 0, best: app.state.challenge.best || 0 },
-      fun: { mode: app.state.fun.mode || "hub", unlocked: app.state.stars >= 100, mouseScore: app.state.fun.mouseScore || 0, keyboardLeft: app.state.fun.keyboardLeft?.length || 0, fixStage: app.state.fun.fixStage || 0, bugsLeft: app.state.fun.bugs?.length || 0, power: app.state.fun.power || 0 },
-      checkIn: { mood: app.state.checkIn.mood, path: app.state.checkIn.path, emojiRound: app.state.checkIn.emojiRound, calmStep: app.state.checkIn.calmStep, ready: app.state.checkIn.ready },
-      sillyTaps: app.state.sillyTaps,
-      note: "DOM app with top-left origin. State records lesson progress, Fun Zone unlock state, moving arcade targets, and the opening check-in.",
-    };
   }
 
   function updateRenderHooks() {
-    window.render_game_to_text = () => JSON.stringify(buildRenderState());
-    window.advanceTime = (ms) => ms;
+    window.render_game_to_text = function() {
+      return JSON.stringify({
+        mode: app.state.currentGame || "menu",
+        stars: app.state.stars,
+        completed: app.state.completed.slice(),
+        freePlay: app.state.freePlay,
+        checkIn: app.state.checkIn,
+        onoff: {
+          mission: app.state.onoff.mission || 0,
+          wakeHits: (app.state.onoff.wakeHits || []).slice(),
+          stepOrder: (app.state.onoff.stepOrder || []).slice(),
+          holdPhase: app.state.onoff.holdPhase || null,
+          holdValue: app.state.onoff.holdValue || 0,
+          scenarioIndex: app.state.onoff.scenarioIndex || 0,
+          routineIndex: app.state.onoff.routineIndex || 0,
+          routineLives: app.state.onoff.routineLives || 0
+        }
+      });
+    };
+    window.advanceTime = function(ms) { return ms; };
   }
 
-  app.helpers = {
-    shuffleArray,
-    pickRandom,
-    renderIcon,
-    showFeedback,
-    bumpStars,
-    completeGame,
-    updateScoreboard,
-    spawnConfetti,
-    playTone,
-    setIslandAccess,
-    getCardHeader,
-    getMissionStrip,
-    bindBackToMap,
-    clearFunTimers,
-    addFunTimer,
-    updateRenderHooks,
+  // 7-Stage Pipeline for State Management
+  app.processAction = function(type, payload) {
+    // 1. Validate
+    if (!type) return;
+
+    // 2. Normalize
+    var rawAction = { type: type, payload: payload || {} };
+
+    // 3. Add Context
+    rawAction.timestamp = Date.now();
+    
+    // 4. Authorize
+    if (rawAction.type === 'START_FUN' && app.state.stars < 100) {
+      showFeedback("Get 100 stars first!", "error");
+      return;
+    }
+
+    // 5. Process (Transactions - Must return NEW state)
+    // We update app.state directly but with manual cloning to ensure parity with rules
+    var newState = Object.assign({}, app.state);
+    
+    // Helper to clone sub-objects
+    var clone = function(obj) { return JSON.parse(JSON.stringify(obj)); };
+
+    switch(rawAction.type) {
+      case 'BUMP_STARS':
+        newState.stars += rawAction.payload.amount;
+        break;
+      case 'COMPLETE_GAME':
+        var gameId = rawAction.payload.id;
+        if (newState.completed.indexOf(gameId) === -1) {
+          newState.completed.push(gameId);
+          newState.stars += 25;
+        }
+        break;
+      case 'SILLY_TAP':
+        newState.sillyTaps += 1;
+        newState.stars += 1;
+        break;
+      case 'UPDATE_CHECKIN':
+        newState.checkIn = Object.assign({}, newState.checkIn, rawAction.payload);
+        break;
+      case 'SET_GAME':
+        newState.currentGame = rawAction.payload.id;
+        break;
+      case 'SET_FREE_PLAY':
+        newState.freePlay = Boolean(rawAction.payload.value);
+        break;
+    }
+
+    // 6. Finalize
+    app.state = newState;
+    updateScoreboard();
+    updateRenderHooks();
+
+    // 7. Emit Result
+    console.log("Action Emit:", rawAction.type);
+    return app.state;
   };
+
+  app.helpers = {
+    shuffleArray: shuffleArray,
+    pickRandom: pickRandom,
+    renderIcon: renderIcon,
+    showFeedback: showFeedback,
+    updateScoreboard: updateScoreboard,
+    spawnConfetti: spawnConfetti,
+    playTone: playTone,
+    setIslandAccess: setIslandAccess,
+    clearFunTimers: clearFunTimers,
+    addFunTimer: addFunTimer,
+    updateRenderHooks: updateRenderHooks,
+    getCardHeader: function(extra, backId, label) {
+       var bid = backId || "backToMap";
+       var blbl = label || "⬅ Map";
+       return '<div class="card-header"><button class="back-button" type="button" id="' + bid + '">' + blbl + '</button><div class="progress-row">' + (extra || "") + '</div></div>';
+    },
+    getMissionStrip: function(title, text, missions) {
+       var mList = missions.map(function(m) {
+         return '<div class="lesson-chip ' + (m.done ? "chip-done" : "") + '">' + m.label + '</div>';
+       }).join("");
+       return '<div class="mission-strip"><div><h3>' + title + '</h3><p>' + text + '</p></div><div class="lesson-plan">' + mList + '</div></div>';
+    },
+    bindBackToMap: function() {
+      var btn = document.getElementById("backToMap");
+      if (btn) btn.addEventListener("click", function() {
+        clearFunTimers();
+        if (app.showLessonMap) app.showLessonMap();
+        else app.checkin.renderWelcome();
+      });
+    }
+  };
+
 })();

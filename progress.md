@@ -18,4 +18,13 @@ Original prompt: Build this using HTML, CSS and vanilla js. Here is the concept:
 - 2026-03-30: Replaced the toolbox-looking computer emoji with a custom SVG asset at `assets/computer.svg` and updated the app to use it.
 - 2026-03-30: Reworked the Fun Zone to feel more arcade-like: moving mouse chase, bouncing keyboard smash, staged computer repair, moving screen bugs, and draining power-charge gameplay.
 - 2026-03-30: Re-ran Playwright after the modular refactor and arcade upgrade. The full lesson plus Fun Zone unlock path still completed successfully.
+- 2026-03-30: Replaced the five Fun Zone bonuses with more distinct kid-friendly games: `Mouse Maze Escape`, `Typing Race!`, `Boot-Up Sequence`, `Screen Paint Splash!`, and `Plug It In!`.
+- 2026-03-30: Added brighter SVG-heavy visuals and new interaction styles for the updated Fun Zone: maze dragging, giant keyboard targeting, timing-bar tapping, creative drawing, and cable-to-port matching.
+- 2026-03-30: Re-ran Playwright after the Fun Zone redesign. The automated path completed the full lesson, unlocked Fun Zone, and cleared the updated bonus games successfully.
+- 2026-04-04: Added a lesson picker menu after the emotional check-in so students can choose `Lesson 1`, `Lesson 2`, or `Play Games`.
+- 2026-04-04: Added `Lesson 2: Turning a Computer On / Off` as a new module in `js/lessons/onoff.js` with 5 missions designed to stretch across about 35 to 40 minutes.
+- 2026-04-04: Lesson 2 now includes wake-the-computer taps, boot-order sequencing, hold-to-power interactions, safe shutdown scenarios, and a longer routine challenge.
+- 2026-04-04: Added new SVG-heavy art and animation for the lesson picker, Lesson 2 power scenes, and restored richer Fun Zone layout styling in `style.css`.
+- 2026-04-04: Updated Playwright verification to cover the check-in, new menu, full Lesson 2 completion, Lesson 1 map entry, and direct Games access from the new menu.
+- 2026-04-04: Re-ran Playwright successfully after the menu + Lesson 2 update. Final automated state showed `onoff` completed and Games accessible from the start menu.
 - TODO: Optional cleanup if desired: remove `node_modules` and the Playwright screenshot artifacts now that verification is finished.
