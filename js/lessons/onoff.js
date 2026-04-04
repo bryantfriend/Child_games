@@ -47,16 +47,21 @@
   }
 
   function renderWakeMission() {
-    var buttons = wakeTargets.map(function(target) {
+    var slots = wakeTargets.map(function(target) {
       var done = app.state.onoff.wakeHits.indexOf(target.id) !== -1;
-      return '<button class="answer-button onoff-target ' + (done ? "teacher-target good" : "") + '" type="button" data-onoff-wake="' + target.id + '">' +
-        '<span class="sort-icon">' + target.emoji + '</span><span>' + target.label + '</span><small>' + target.hint + '</small></button>';
+      return '<div class="drop-zone onoff-wake-slot ' + (done ? "filled" : "") + '" data-zone="' + target.id + '">' +
+        '<strong>' + target.label + '</strong><p>' + (done ? "Ready!" : target.hint) + '</p></div>';
+    }).join("");
+    var cards = h.shuffleArray(wakeTargets.slice()).map(function(target) {
+      var used = app.state.onoff.wakeHits.indexOf(target.id) !== -1;
+      return '<div class="draggable-item ' + (used ? "placed" : "") + '" data-kind="onoff-wake" data-id="' + target.id + '">' +
+        '<span class="draggable-item-emoji">' + target.emoji + '</span><div><strong>' + target.label + '</strong><div>' + target.hint + '</div></div></div>';
     }).join("");
 
-    return '<div class="onoff-layout">' +
-      '<div class="onoff-hero-card">' + computerScene(app.state.onoff.wakeHits.length > 1, app.state.onoff.wakeHits.length > 2) +
-      '<div class="onoff-speech">Tap the things that help the computer wake up.</div></div>' +
-      '<div class="answers-grid onoff-choice-grid">' + buttons + '</div>' +
+    return '<div class="build-layout">' +
+      '<div class="computer-board"><div class="onoff-hero-card">' + computerScene(app.state.onoff.wakeHits.indexOf("button") !== -1, app.state.onoff.wakeHits.indexOf("screen") !== -1) +
+      '<div class="onoff-speech">Drag the 3 power steps to wake the computer.</div></div><div class="drop-zone-grid onoff-wake-grid">' + slots + '</div></div>' +
+      '<div class="tray"><div class="pill">Mission 1 of 5</div><div class="draggable-list">' + cards + '</div><p class="hint">Drag each card to its matching power spot.</p></div>' +
       '</div>';
   }
 
@@ -122,9 +127,6 @@
   function bindMissionEvents() {
     h.bindDragSystem();
 
-    bindMany("[data-onoff-wake]", function(btn) {
-      btn.addEventListener("click", function() { handleWake(btn.dataset.onoffWake); });
-    });
     bindMany("[data-onoff-scenario]", function(btn) {
       btn.addEventListener("click", function() { handleScenario(btn.dataset.onoffScenario); });
     });
@@ -150,20 +152,25 @@
     for (i = 0; i < nodes.length; i++) binder(nodes[i]);
   }
 
-  function handleWake(id) {
-    if (app.state.onoff.wakeHits.indexOf(id) !== -1) return;
-    app.state.onoff.wakeHits.push(id);
-    app.processAction('BUMP_STARS', { amount: 2 });
-    if (app.state.onoff.wakeHits.length >= wakeTargets.length) {
-      app.state.onoff.mission = 2;
-      h.showFeedback("The computer is waking up!", "success");
-    } else {
-      h.showFeedback("Nice tap!", "success");
-    }
-    render();
-  }
-
   function handleDrop(kind, id, target) {
+    if (kind === "onoff-wake") {
+      if (!target || target.dataset.zone !== id) {
+        h.showFeedback("Try the matching power spot.", "error");
+        return;
+      }
+      if (app.state.onoff.wakeHits.indexOf(id) === -1) {
+        app.state.onoff.wakeHits.push(id);
+      }
+      app.processAction('BUMP_STARS', { amount: 2 });
+      if (app.state.onoff.wakeHits.length >= wakeTargets.length) {
+        app.state.onoff.mission = 2;
+        h.showFeedback("The computer is waking up!", "success");
+      } else {
+        h.showFeedback("Great match!", "success");
+      }
+      render();
+      return;
+    }
     if (kind !== "onoff-step") return;
     var nextIndex = app.state.onoff.stepOrder.length;
     var expected = onoffSteps[nextIndex];
