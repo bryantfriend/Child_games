@@ -6,12 +6,52 @@
   var h = app.helpers;
   var traceOrder = ["system", "mouse", "keyboard", "monitor"];
   var imageCache = {};
-  var traceTemplates = {
-    system: { title: "Computer", color: "#4d7de0", text: "Trace the computer from 1 to 8.", points: [{ x: 284, y: 46 }, { x: 420, y: 46 }, { x: 420, y: 204 }, { x: 284, y: 204 }, { x: 326, y: 68 }, { x: 376, y: 68 }, { x: 376, y: 176 }, { x: 326, y: 176 }] },
-    mouse: { title: "Mouse", color: "#ff9f43", text: "Trace the mouse from 1 to 8.", points: [{ x: 486, y: 162 }, { x: 504, y: 96 }, { x: 560, y: 62 }, { x: 622, y: 88 }, { x: 642, y: 146 }, { x: 620, y: 208 }, { x: 554, y: 226 }, { x: 500, y: 204 }] },
-    keyboard: { title: "Keyboard", color: "#2ec27e", text: "Trace the keyboard from 1 to 8.", points: [{ x: 194, y: 120 }, { x: 396, y: 120 }, { x: 420, y: 180 }, { x: 228, y: 180 }, { x: 214, y: 140 }, { x: 374, y: 140 }, { x: 388, y: 162 }, { x: 242, y: 162 }] },
-    monitor: { title: "Monitor", color: "#ff5d8f", text: "Trace the monitor from 1 to 8.", points: [{ x: 244, y: 50 }, { x: 442, y: 50 }, { x: 442, y: 170 }, { x: 244, y: 170 }, { x: 322, y: 170 }, { x: 364, y: 170 }, { x: 352, y: 222 }, { x: 290, y: 222 }] }
-  };
+    var traceTemplates = {
+      system: {
+        title: "Computer",
+        color: "#4d7de0",
+        text: "Trace the computer from 1 to 16.",
+        points: [
+          { x: 278, y: 54 }, { x: 332, y: 46 }, { x: 390, y: 46 }, { x: 430, y: 60 },
+          { x: 438, y: 106 }, { x: 438, y: 150 }, { x: 430, y: 194 }, { x: 394, y: 214 },
+          { x: 334, y: 218 }, { x: 286, y: 210 }, { x: 272, y: 178 }, { x: 272, y: 128 },
+          { x: 272, y: 84 }, { x: 304, y: 70 }, { x: 338, y: 76 }, { x: 338, y: 196 }
+        ]
+      },
+      mouse: {
+        title: "Mouse",
+        color: "#ff9f43",
+        text: "Trace the mouse from 1 to 16.",
+        points: [
+          { x: 468, y: 176 }, { x: 478, y: 132 }, { x: 500, y: 96 }, { x: 536, y: 72 },
+          { x: 580, y: 64 }, { x: 620, y: 78 }, { x: 646, y: 112 }, { x: 654, y: 154 },
+          { x: 646, y: 194 }, { x: 620, y: 222 }, { x: 580, y: 234 }, { x: 536, y: 228 },
+          { x: 500, y: 208 }, { x: 482, y: 180 }, { x: 566, y: 90 }, { x: 566, y: 206 }
+        ]
+      },
+      keyboard: {
+        title: "Keyboard",
+        color: "#2ec27e",
+        text: "Trace the keyboard from 1 to 16.",
+        points: [
+          { x: 184, y: 128 }, { x: 240, y: 116 }, { x: 314, y: 112 }, { x: 388, y: 116 },
+          { x: 430, y: 134 }, { x: 440, y: 166 }, { x: 420, y: 190 }, { x: 366, y: 198 },
+          { x: 294, y: 200 }, { x: 232, y: 196 }, { x: 198, y: 186 }, { x: 188, y: 160 },
+          { x: 214, y: 138 }, { x: 262, y: 142 }, { x: 324, y: 144 }, { x: 382, y: 146 }
+        ]
+      },
+      monitor: {
+        title: "Monitor",
+        color: "#ff5d8f",
+        text: "Trace the monitor from 1 to 16.",
+        points: [
+          { x: 238, y: 60 }, { x: 296, y: 48 }, { x: 370, y: 48 }, { x: 432, y: 58 },
+          { x: 446, y: 94 }, { x: 446, y: 136 }, { x: 440, y: 172 }, { x: 410, y: 188 },
+          { x: 354, y: 194 }, { x: 328, y: 194 }, { x: 328, y: 220 }, { x: 364, y: 242 },
+          { x: 318, y: 242 }, { x: 278, y: 220 }, { x: 278, y: 194 }, { x: 238, y: 178 }
+        ]
+      }
+    };
   var paintColors = ["#4d7de0", "#ff5d8f", "#ffb347", "#2ec27e", "#8a6cff", "#23405e"];
 
   function renderDraggable(item, kind, placed) {
@@ -204,7 +244,7 @@
       var progress = app.state.build.traceProgress[templateId] || 0;
       if (progress >= template.points.length - 1) return;
       var point = getCanvasPoint(canvas, event);
-      if (distance(point, template.points[progress]) > 42) return;
+        if (distance(point, template.points[progress]) > 34) return;
       drawing = true;
       scratch = point;
       canvas.setPointerCapture(event.pointerId);
@@ -237,7 +277,7 @@
       drawing = false;
       scratch = null;
       if (canvas.hasPointerCapture && canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
-      if (distance(point, nextPoint) <= 56) {
+        if (distance(point, nextPoint) <= 46) {
         app.state.build.traceProgress[templateId] = progress + 1;
         if (app.state.build.traceProgress[templateId] >= template.points.length - 1) {
           app.state.build.traceComplete[templateId] = true;
@@ -279,7 +319,7 @@
     context.globalAlpha = 0.18;
     context.fillStyle = color;
     context.strokeStyle = color;
-    context.lineWidth = 8;
+      context.lineWidth = 5;
     if (templateId === "system") {
       roundRect(context, 284, 46, 136, 158, 24);
       context.fill();
@@ -316,8 +356,8 @@
   function drawGuideLines(context, template, progress) {
     context.save();
     context.strokeStyle = "rgba(92, 122, 158, 0.25)";
-    context.lineWidth = 6;
-    context.setLineDash([8, 10]);
+      context.lineWidth = 4;
+      context.setLineDash([6, 8]);
     context.lineCap = "round";
     context.beginPath();
     var i;
@@ -333,7 +373,7 @@
     if (!progress) return;
     context.save();
     context.strokeStyle = template.color;
-    context.lineWidth = 12;
+      context.lineWidth = 7;
     context.lineCap = "round";
     context.lineJoin = "round";
     context.beginPath();
@@ -347,7 +387,7 @@
   function drawColoredOutline(context, template, color) {
     context.save();
     context.strokeStyle = color;
-    context.lineWidth = 10;
+      context.lineWidth = 6;
     context.lineCap = "round";
     context.lineJoin = "round";
     context.beginPath();
@@ -367,7 +407,7 @@
       if (!stroke.points.length) continue;
       context.save();
       context.strokeStyle = stroke.color;
-      context.lineWidth = mode === "color" ? 22 : 16;
+        context.lineWidth = mode === "color" ? 18 : 10;
       context.lineCap = "round";
       context.lineJoin = "round";
       context.beginPath();
@@ -382,7 +422,7 @@
   function drawScratch(context, from, to, color) {
     context.save();
     context.strokeStyle = color;
-    context.lineWidth = 10;
+      context.lineWidth = 6;
     context.lineCap = "round";
     context.beginPath();
     context.moveTo(from.x, from.y);
@@ -397,13 +437,13 @@
       context.save();
       context.fillStyle = i < progress ? template.color : "#ffffff";
       context.strokeStyle = i < progress ? template.color : "#aac7f6";
-      context.lineWidth = 5;
-      context.beginPath();
-      context.arc(template.points[i].x, template.points[i].y, 18, 0, Math.PI * 2);
-      context.fill();
-      context.stroke();
-      context.fillStyle = i < progress ? "#ffffff" : "#355da6";
-      context.font = "bold 16px Quicksand, sans-serif";
+        context.lineWidth = 3;
+        context.beginPath();
+        context.arc(template.points[i].x, template.points[i].y, 12, 0, Math.PI * 2);
+        context.fill();
+        context.stroke();
+        context.fillStyle = i < progress ? "#ffffff" : "#355da6";
+        context.font = "bold 12px Quicksand, sans-serif";
       context.textAlign = "center";
       context.textBaseline = "middle";
       context.fillText(String(i + 1), template.points[i].x, template.points[i].y + 1);

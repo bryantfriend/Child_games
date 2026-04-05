@@ -59,7 +59,7 @@
       var y = (segment.a.y + segment.b.y) / 2;
       var angle = Math.atan2(segment.b.y - segment.a.y, segment.b.x - segment.a.x) * 180 / Math.PI;
       var length = distance(segment.a, segment.b) * 0.84;
-      return '<div class="maze-laser-wrap" style="left:' + x + '%;top:' + y + '%;transform: translate(-50%, -50%) rotate(' + angle + 'deg);"><div class="maze-laser ' + (isOn ? "maze-laser-on" : "maze-laser-off") + '" style="width:' + length + '%;"></div></div>';
+      return '<div class="maze-laser-wrap" style="left:' + x + '%;top:' + y + '%;width:' + length + '%;transform: translate(-50%, -50%) rotate(' + angle + 'deg);"><div class="maze-laser ' + (isOn ? "maze-laser-on" : "maze-laser-off") + '"></div><div class="maze-laser-tip maze-laser-tip-left"></div><div class="maze-laser-tip maze-laser-tip-right"></div></div>';
     }).join("");
     var levelDots = mazeLevels.map(function(item, index) {
       var cls = index === app.state.fun.mazeLevel ? "maze-level-dot-on " : "";
@@ -161,15 +161,18 @@
 
   function moveMouse(x, y, forceStart) {
     var levelData = getLevel();
-    var projection = projectOntoPath(levelData.points, x, y);
-    var maxJump = levelData.tag === "Easy" ? 0.16 : levelData.tag === "Medium" ? 0.12 : 0.09;
+    var maxJump = levelData.tag === "Easy" ? 0.12 : levelData.tag === "Medium" ? 0.09 : 0.07;
+    var backtrack = 0.02;
     var lastAlong = app.state.fun.mazeAlong;
-    var nextAlong = Math.max(lastAlong, projection.along);
-    if (forceStart) nextAlong = Math.min(nextAlong, 0.04);
-    if (nextAlong - lastAlong > maxJump) nextAlong = lastAlong + maxJump;
+    var projection = projectOntoPath(levelData.points, x, y, Math.max(0, lastAlong - backtrack), Math.min(1, lastAlong + maxJump));
+    var threshold = levelData.tag === "Easy" ? 9 : levelData.tag === "Medium" ? 7.5 : 6.5;
+    var nextAlong = projection.along;
+    if (forceStart) nextAlong = Math.min(nextAlong, 0.035);
+    if (nextAlong < lastAlong - backtrack) nextAlong = lastAlong - backtrack;
+    if (nextAlong > lastAlong + maxJump) nextAlong = lastAlong + maxJump;
     var snapped = pointAtAlong(levelData.points, nextAlong);
 
-    if (projection.distance > 13) {
+    if (projection.distance > threshold) {
       app.state.fun.mazeMessage = "Move closer to the path.";
       updateMouseNode();
       return;
@@ -184,7 +187,10 @@
 
     app.state.fun.mazeAlong = nextAlong;
     app.state.fun.mazeProgress = nextAlong;
-    app.state.fun.mazePoint = snapped;
+    app.state.fun.mazePoint = {
+      x: app.state.fun.mazePoint.x + (snapped.x - app.state.fun.mazePoint.x) * 0.82,
+      y: app.state.fun.mazePoint.y + (snapped.y - app.state.fun.mazePoint.y) * 0.82
+    };
     app.state.fun.mazeMessage = nextAlong > 0.96 ? "The computer is right there!" : "Nice and easy.";
     updateMouseNode();
 
@@ -283,13 +289,20 @@
     return { a: points[index], b: points[index + 1] };
   }
 
-  function projectOntoPath(points, x, y) {
+  function projectOntoPath(points, x, y, minAlong, maxAlong) {
     var total = totalLength(points);
-    var best = { distance: Infinity, along: 0 };
+    var best = { distance: Infinity, along: clamp(typeof minAlong === "number" ? minAlong : 0, 0, 1) };
     var walked = 0;
     var i;
     for (i = 0; i < points.length - 1; i++) {
       var segment = getSegment(points, i);
+      var segmentStart = walked / total;
+      var segmentEnd = (walked + distance(segment.a, segment.b)) / total;
+      if (typeof minAlong === "number" && segmentEnd < minAlong) {
+        walked += distance(segment.a, segment.b);
+        continue;
+      }
+      if (typeof maxAlong === "number" && segmentStart > maxAlong) break;
       var dx = segment.b.x - segment.a.x;
       var dy = segment.b.y - segment.a.y;
       var lengthSq = dx * dx + dy * dy;
@@ -297,9 +310,18 @@
       var px = segment.a.x + dx * t;
       var py = segment.a.y + dy * t;
       var dist = distance({ x: x, y: y }, { x: px, y: py });
+      var along = (walked + Math.sqrt(lengthSq) * t) / total;
+      if (typeof minAlong === "number" && along < minAlong) {
+        walked += Math.sqrt(lengthSq);
+        continue;
+      }
+      if (typeof maxAlong === "number" && along > maxAlong) {
+        walked += Math.sqrt(lengthSq);
+        continue;
+      }
       if (dist < best.distance) {
         best.distance = dist;
-        best.along = (walked + Math.sqrt(lengthSq) * t) / total;
+        best.along = along;
       }
       walked += Math.sqrt(lengthSq);
     }

@@ -1,11 +1,19 @@
 (function () {
   var app = window.ICTApp;
   var onoffSteps = app.data.onoffSteps;
+  var wakeChecks = app.data.onoffWakeChecks;
+  var stepChecks = app.data.onoffStepChecks;
   var onoffScenarios = app.data.onoffScenarios;
   var routineRounds = app.data.onoffRoutineRounds;
   var routineChoices = app.data.onoffRoutineChoices;
   var h = app.helpers;
   var moduleOrder = ["wake", "steps", "power", "safe"];
+  var powerPhases = [
+    { id: "turn_on", type: "hold", chip: "Turn On", text: "Press and hold to turn ON.", speech: "Hold the power button to wake the computer." },
+    { id: "sleep", type: "tap", chip: "Sleep", text: "Tap SLEEP for a short break.", speech: "Now the child takes a short break. Put the computer to sleep." },
+    { id: "wake", type: "tap", chip: "Wake Up", text: "Tap WAKE to come back.", speech: "Break is done. Wake the computer up again." },
+    { id: "turn_off", type: "hold", chip: "Turn Off", text: "Press and hold to turn OFF.", speech: "Class is finished. Turn the computer off safely." }
+  ];
   var funGames = [
     { id: "fix", emoji: "🖥️", title: "Boot-Up Sequence", text: "Tap at the right time to get the computer ready." },
     { id: "power", emoji: "🔌", title: "Plug It In!", text: "Match cables and ports like a tech helper." },
@@ -27,8 +35,11 @@
       wakeProgress: 0,
       wakeTimer: null,
       wakeBootTimer: null,
+      wakeCheckIndex: 0,
       stepOrder: [],
+      stepsCheckIndex: 0,
       holdPhase: "turn_on",
+      powerTaskIndex: 0,
       holdValue: 0,
       holdTimer: null,
       safeStage: "scenario",
@@ -106,6 +117,7 @@
     var plugged = app.state.onoff.plugConnected;
     var booting = app.state.onoff.wakeStage === "booting";
     var progress = Math.min(app.state.onoff.wakeProgress, 100);
+    if (app.state.onoff.wakeStage === "check") return renderWakeCheckMission();
     return '<div class="build-layout">' +
       '<div class="computer-board"><div class="onoff-hero-card onoff-power-scene">' + powerScene(plugged, booting, progress) +
       '<div class="onoff-speech">' + (plugged ? (booting ? "The computer is starting up..." : "Now press the power button.") : "Drag the plug into the wall first.") + '</div></div></div>' +
@@ -117,7 +129,21 @@
       '</div>';
   }
 
+  function renderWakeCheckMission() {
+    var round = wakeChecks[app.state.onoff.wakeCheckIndex];
+    var choices = h.shuffleArray(round.options.slice()).map(function(option) {
+      return '<button class="big-choice onoff-choice-button" type="button" data-onoff-wake-check="' + option.id + '">' +
+        '<span class="emoji-face">' + option.emoji + '</span><span>' + option.label + '</span></button>';
+    }).join("");
+    return '<div class="scenario-card onoff-scenario-card">' +
+      '<div class="onoff-hero-card mini-hero">' + powerScene(true, false, 100) + '<div class="onoff-speech">The computer is awake. Tap the best next step.</div></div>' +
+      '<div class="welcome-stack"><h3>' + round.text + '</h3><p class="hero-text">Finish all 4 wake-up checks.</p><div class="choice-pair onoff-button-pair">' + choices + '</div>' +
+      '<div class="lesson-plan"><div class="lesson-chip">Check ' + (app.state.onoff.wakeCheckIndex + 1) + ' / ' + wakeChecks.length + '</div><div class="lesson-chip">Wake practice</div></div></div></div>' +
+      '<div class="choice-row onoff-map-actions"><button class="fun-button" type="button" id="backToLessonMapBtn">Back To Lesson 2 Map</button></div>';
+  }
+
   function renderStepsMission() {
+    if (app.state.onoff.stepsCheckIndex >= 0 && app.state.onoff.stepOrder.length >= onoffSteps.length) return renderStepsQuizMission();
     var slots = onoffSteps.map(function(step, index) {
       var placed = app.state.onoff.stepOrder[index];
       return '<div class="drop-zone onoff-step-slot ' + (placed ? "filled" : "") + '" data-zone="' + String(index) + '">' +
@@ -135,16 +161,47 @@
       '</div>';
   }
 
+  function renderStepsQuizMission() {
+    var round = stepChecks[app.state.onoff.stepsCheckIndex];
+    var choices = h.shuffleArray(round.options.slice()).map(function(id) {
+      var step = findChoiceById(id);
+      return '<button class="teacher-target onoff-routine-button" type="button" data-onoff-step-check="' + id + '">' +
+        '<span class="sort-icon">' + step.emoji + '</span><span>' + step.label + '</span></button>';
+    }).join("");
+    return '<div class="teacher-layout">' +
+      '<div class="teacher-stage onoff-final-stage"><div class="teacher-icon">🪜</div><h3 class="teacher-command">' + round.text + '</h3><p class="teacher-subtext">Think about the startup order.</p>' +
+      '<div class="lesson-plan"><div class="lesson-chip">Quiz ' + (app.state.onoff.stepsCheckIndex + 1) + ' / ' + stepChecks.length + '</div><div class="lesson-chip">Boot order</div></div></div>' +
+      '<div class="teacher-targets challenge-grid">' + choices + '</div></div><div class="choice-row onoff-map-actions"><button class="fun-button" type="button" id="backToLessonMapBtn">Back To Lesson 2 Map</button></div>';
+  }
+
   function renderHoldMission() {
-    var phase = app.state.onoff.holdPhase;
+    var phaseData = powerPhases[app.state.onoff.powerTaskIndex] || powerPhases[powerPhases.length - 1];
+    var phase = phaseData.id;
     var meter = Math.min(app.state.onoff.holdValue, 100);
+    if (phaseData.type === "tap") return renderPowerTapMission(phaseData);
     return '<div class="onoff-layout">' +
       '<div class="onoff-hero-card hold-card">' + holdScene(phase === "turn_off", meter) +
         '<div class="power-ring"><div class="power-ring-fill" style="height:' + meter + '%;"></div><button class="power-hold-button" type="button" id="holdPowerBtn">⏻</button></div>' +
-        '<div class="onoff-speech">' + (phase === "turn_on" ? "Press and hold to turn ON." : "Press and hold to turn OFF.") + '</div>' +
+        '<div class="onoff-speech">' + phaseData.speech + '</div>' +
       '</div>' +
-      '<div class="lesson-plan"><div class="lesson-chip">Phase: ' + (phase === "turn_on" ? "Turn On" : "Turn Off") + '</div><div class="lesson-chip">Hold: ' + meter + '%</div></div><div class="choice-row"><button class="fun-button" type="button" id="backToLessonMapBtn">Back To Lesson 2 Map</button></div>' +
+      '<div class="lesson-plan"><div class="lesson-chip">Step ' + (app.state.onoff.powerTaskIndex + 1) + ' / ' + powerPhases.length + '</div><div class="lesson-chip">Phase: ' + phaseData.chip + '</div><div class="lesson-chip">Hold: ' + meter + '%</div></div><div class="choice-row"><button class="fun-button" type="button" id="backToLessonMapBtn">Back To Lesson 2 Map</button></div>' +
       '</div>';
+  }
+
+  function renderPowerTapMission(phaseData) {
+    var actionId = phaseData.id;
+    var choices = [
+      { id: actionId, label: actionId === "sleep" ? "Sleep" : "Wake Up", emoji: actionId === "sleep" ? "😴" : "💡" },
+      { id: "restart", label: "Restart", emoji: "🔄" },
+      { id: "turn_off", label: "Turn Off", emoji: "⏻" }
+    ];
+    return '<div class="scenario-card onoff-scenario-card">' +
+      '<div class="onoff-hero-card mini-hero">' + holdScene(actionId === "sleep", 68) + '<div class="onoff-speech">' + phaseData.speech + '</div></div>' +
+      '<div class="welcome-stack"><h3>' + phaseData.text + '</h3><p class="hero-text">Choose the best action.</p><div class="choice-pair onoff-button-pair">' +
+      h.shuffleArray(choices).map(function(option) {
+        return '<button class="big-choice onoff-choice-button" type="button" data-onoff-power-action="' + option.id + '"><span class="emoji-face">' + option.emoji + '</span><span>' + option.label + '</span></button>';
+      }).join("") +
+      '</div><div class="lesson-plan"><div class="lesson-chip">Step ' + (app.state.onoff.powerTaskIndex + 1) + ' / ' + powerPhases.length + '</div><div class="lesson-chip">' + phaseData.chip + '</div></div></div></div><div class="choice-row onoff-map-actions"><button class="fun-button" type="button" id="backToLessonMapBtn">Back To Lesson 2 Map</button></div>';
   }
 
   function renderScenarioMission() {
@@ -187,6 +244,15 @@
 
     bindMany("[data-onoff-scenario]", function(btn) {
       btn.addEventListener("click", function() { handleScenario(btn.dataset.onoffScenario); });
+    });
+    bindMany("[data-onoff-wake-check]", function(btn) {
+      btn.addEventListener("click", function() { handleWakeCheck(btn.dataset.onoffWakeCheck); });
+    });
+    bindMany("[data-onoff-step-check]", function(btn) {
+      btn.addEventListener("click", function() { handleStepCheck(btn.dataset.onoffStepCheck); });
+    });
+    bindMany("[data-onoff-power-action]", function(btn) {
+      btn.addEventListener("click", function() { handlePowerAction(btn.dataset.onoffPowerAction); });
     });
     bindMany("[data-onoff-routine]", function(btn) {
       btn.addEventListener("click", function() { handleRoutine(btn.dataset.onoffRoutine, btn); });
@@ -235,7 +301,8 @@
     app.state.onoff.stepOrder.push(expected);
     app.processAction('BUMP_STARS', { amount: 2 });
     if (app.state.onoff.stepOrder.length >= onoffSteps.length) {
-      completeModule("steps", "Boot steps complete!");
+      app.state.onoff.stepsCheckIndex = 0;
+      h.showFeedback("Now answer the boot order quiz!", "success");
     } else {
       h.showFeedback("Good order!", "success");
     }
@@ -269,10 +336,11 @@
     clearInterval(app.state.onoff.holdTimer);
     app.state.onoff.holdTimer = null;
     app.processAction('BUMP_STARS', { amount: 4 });
-    if (app.state.onoff.holdPhase === "turn_on") {
-      app.state.onoff.holdPhase = "turn_off";
+    app.state.onoff.powerTaskIndex += 1;
+    if (app.state.onoff.powerTaskIndex < powerPhases.length) {
+      app.state.onoff.holdPhase = powerPhases[app.state.onoff.powerTaskIndex].id;
       app.state.onoff.holdValue = 0;
-      h.showFeedback("Now turn it off.", "success");
+      h.showFeedback("Great! Next power step.", "success");
       render();
       return;
     }
@@ -295,8 +363,10 @@
         app.processAction('BUMP_STARS', { amount: 3 });
         h.showFeedback("Computer starting!", "success");
         app.state.onoff.wakeBootTimer = setTimeout(function() {
-          app.state.onoff.wakeHits = ["plug", "button", "screen"];
-          completeModule("wake", "Wake-up lesson complete!");
+          app.state.onoff.wakeStage = "check";
+          app.state.onoff.wakeHits = ["plug", "button"];
+          app.state.onoff.wakeCheckIndex = 0;
+          render();
         }, 900);
       }
       render();
@@ -318,6 +388,58 @@
     } else {
       h.showFeedback("Yes! Safe step.", "success");
     }
+    render();
+  }
+
+  function handleWakeCheck(id) {
+    var round = wakeChecks[app.state.onoff.wakeCheckIndex];
+    if (id !== round.answer) {
+      h.showFeedback("Try the best next step.", "error");
+      return;
+    }
+    app.processAction('BUMP_STARS', { amount: 2 });
+    app.state.onoff.wakeHits.push(id);
+    app.state.onoff.wakeCheckIndex += 1;
+    if (app.state.onoff.wakeCheckIndex >= wakeChecks.length) {
+      completeModule("wake", "Wake-up lesson complete!");
+      return;
+    }
+    h.showFeedback("Good wake-up step!", "success");
+    render();
+  }
+
+  function handleStepCheck(id) {
+    var round = stepChecks[app.state.onoff.stepsCheckIndex];
+    if (id !== round.answer) {
+      h.showFeedback("Think about the order again.", "error");
+      return;
+    }
+    app.processAction('BUMP_STARS', { amount: 2 });
+    app.state.onoff.stepsCheckIndex += 1;
+    if (app.state.onoff.stepsCheckIndex >= stepChecks.length) {
+      completeModule("steps", "Boot steps complete!");
+      return;
+    }
+    h.showFeedback("Yes! Keep going.", "success");
+    render();
+  }
+
+  function handlePowerAction(id) {
+    var phaseData = powerPhases[app.state.onoff.powerTaskIndex];
+    if (!phaseData || phaseData.type !== "tap") return;
+    if (id !== phaseData.id) {
+      h.showFeedback("Try the best power action.", "error");
+      return;
+    }
+    app.processAction('BUMP_STARS', { amount: 2 });
+    app.state.onoff.powerTaskIndex += 1;
+    app.state.onoff.holdPhase = powerPhases[Math.min(app.state.onoff.powerTaskIndex, powerPhases.length - 1)].id;
+    app.state.onoff.holdValue = 0;
+    if (app.state.onoff.powerTaskIndex >= powerPhases.length) {
+      completeModule("power", "Power practice done!");
+      return;
+    }
+    h.showFeedback("Nice power choice!", "success");
     render();
   }
 
@@ -378,11 +500,14 @@
       state.wakeStage = "plug";
       state.wakeProgress = 0;
       state.wakeHits = [];
+      state.wakeCheckIndex = 0;
     } else if (moduleId === "steps") {
       state.mission = 2;
       state.stepOrder = [];
+      state.stepsCheckIndex = -1;
     } else if (moduleId === "power") {
       state.mission = 3;
+      state.powerTaskIndex = 0;
       state.holdPhase = "turn_on";
       state.holdValue = 0;
     } else if (moduleId === "safe") {
@@ -453,6 +578,12 @@
     return text;
   }
 
+  function findChoiceById(id) {
+    var step = onoffSteps.filter(function(item) { return item.id === id; })[0];
+    if (step) return step;
+    return routineChoices.filter(function(item) { return item.id === id; })[0] || { id: id, label: id, emoji: "✨" };
+  }
+
   function computerScene(screenOn, glow) {
     return '<svg viewBox="0 0 520 280" class="onoff-scene-svg" aria-hidden="true">' +
       '<rect x="70" y="35" width="260" height="160" rx="28" fill="#355da6"/>' +
@@ -516,5 +647,13 @@
       '</div>';
   }
 
-  app.lessons.onoff = { start: start, render: render, handleDrop: handleDrop, showMap: showMap };
+  app.lessons.onoff = {
+    start: start,
+    render: render,
+    handleDrop: handleDrop,
+    handleWakeCheck: handleWakeCheck,
+    handleStepCheck: handleStepCheck,
+    handlePowerAction: handlePowerAction,
+    showMap: showMap
+  };
 })();

@@ -7,7 +7,7 @@
       input: { title: "Input Island", subtitle: "Sort, choose, and go fast.", duration: "8 to 10 minutes" },
       output: { title: "Output Island", subtitle: "Name it and choose it.", duration: "8 to 10 minutes" },
       challenge: { title: "Challenge Island", subtitle: "Listen, tap, or wait.", duration: "10 to 12 minutes" },
-      onoff: { title: "Lesson 2: Turn It On / Off", subtitle: "Wake, wait, save, and shut down safely.", duration: "35 to 40 minutes" },
+      onoff: { title: "Lesson 2: Turn It On / Off", subtitle: "Wake, wait, save, and shut down safely.", duration: "45 to 50 minutes" },
       fun: { title: "Fun Zone", subtitle: "Bonus games unlocked!", duration: "Free play" },
     },
     lessonMenu: [
@@ -270,6 +270,19 @@
       { id: "login", label: "Log in", emoji: "🙂" },
       { id: "work", label: "Start work", emoji: "🖥️" }
     ],
+    onoffWakeChecks: [
+      { text: "The screen lights up. Tap SCREEN ON.", answer: "screen", options: [{ id: "screen", label: "Screen On", emoji: "💡" }, { id: "off", label: "Still Off", emoji: "🌙" }, { id: "sleep", label: "Sleep", emoji: "😴" }] },
+      { text: "Now the child needs to get in. Tap LOG IN.", answer: "login", options: [{ id: "restart", label: "Restart", emoji: "🔄" }, { id: "login", label: "Log In", emoji: "🙂" }, { id: "run", label: "Run Away", emoji: "🏃" }] },
+      { text: "The computer is ready. Tap START WORK.", answer: "work", options: [{ id: "work", label: "Start Work", emoji: "🖥️" }, { id: "turn_off", label: "Turn Off", emoji: "⏻" }, { id: "dance", label: "Dance", emoji: "💃" }] },
+      { text: "One last check. Tap WAIT while the computer gets ready.", answer: "wait", options: [{ id: "wait", label: "Wait", emoji: "⏳" }, { id: "smash", label: "Smash Keys", emoji: "⌨️" }, { id: "sleep", label: "Sleep", emoji: "😴" }] }
+    ],
+    onoffStepChecks: [
+      { text: "What comes first?", answer: "plug", options: ["plug", "work", "login"] },
+      { text: "What comes after plug in?", answer: "press", options: ["wait", "press", "turn_off"] },
+      { text: "After press power, what next?", answer: "wait", options: ["wait", "work", "sleep"] },
+      { text: "When the computer wakes up, what next?", answer: "login", options: ["login", "turn_off", "plug"] },
+      { text: "What is the last step?", answer: "work", options: ["restart", "work", "wait"] }
+    ],
     onoffScenarios: [
       { text: "You want to start computer class.", answer: "turn_on", options: [{ id: "turn_on", label: "Turn On", emoji: "🔘" }, { id: "sleep", label: "Sleep", emoji: "😴" }, { id: "restart", label: "Restart", emoji: "🔄" }] },
       { text: "You finished your drawing. What first?", answer: "save_first", options: [{ id: "save_first", label: "Save", emoji: "💾" }, { id: "turn_off", label: "Turn Off", emoji: "⏻" }, { id: "run", label: "Run Away", emoji: "🏃" }] },
@@ -288,7 +301,12 @@
       { text: "Screen wakes up. Now?", answer: "login" },
       { text: "You want to use the computer.", answer: "turn_on" },
       { text: "Work is done and saved.", answer: "turn_off" },
-      { text: "Power light is on. Be patient.", answer: "wait" }
+      { text: "Power light is on. Be patient.", answer: "wait" },
+      { text: "You are back from lunch fast. Best choice?", answer: "sleep" },
+      { text: "The class wants to begin computer time.", answer: "turn_on" },
+      { text: "The screen shows your file. Before shutting down?", answer: "save_first" },
+      { text: "Everything is frozen and will not move.", answer: "restart" },
+      { text: "The login page is on the screen. What now?", answer: "login" }
     ],
     onoffRoutineChoices: [
       { id: "turn_on", label: "Turn On", emoji: "🔘" },
