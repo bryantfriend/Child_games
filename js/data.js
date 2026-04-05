@@ -16,9 +16,9 @@
       { id: "games", title: "Play Games", subtitle: "Fun Zone Arcade", emoji: "🎮" }
     ],
     buildParts: [
-      { id: "monitor", label: "Monitor", emoji: "🖥️", hint: "Shows pictures", zone: "monitor" },
-      { id: "keyboard", label: "Keyboard", emoji: "⌨️", hint: "Helps you type", zone: "keyboard" },
-      { id: "mouse", label: "Mouse", emoji: "🖱️", hint: "Moves and clicks", zone: "mouse" },
+      { id: "monitor", label: "Monitor", asset: "assets/monitor.svg", hint: "Shows pictures", zone: "monitor" },
+      { id: "keyboard", label: "Keyboard", asset: "assets/keyboard.svg", hint: "Helps you type", zone: "keyboard" },
+      { id: "mouse", label: "Mouse", asset: "assets/mouse.svg", hint: "Moves and clicks", zone: "mouse" },
       { id: "system", label: "Computer", asset: "assets/computer.svg", hint: "Runs the computer", zone: "system" },
     ],
     buildFunctions: [
@@ -85,9 +85,9 @@
       { says: true, prompt: "Teacher says touch the printer!", answer: "printer" },
     ],
     challengeTargets: [
-      { id: "keyboard", label: "Keyboard", emoji: "⌨️" },
-      { id: "mouse", label: "Mouse", emoji: "🖱️" },
-      { id: "monitor", label: "Monitor", emoji: "🖥️" },
+      { id: "keyboard", label: "Keyboard", asset: "assets/keyboard.svg" },
+      { id: "mouse", label: "Mouse", asset: "assets/mouse.svg" },
+      { id: "monitor", label: "Monitor", asset: "assets/monitor.svg" },
       { id: "speaker", label: "Speaker", emoji: "🔊" },
       { id: "microphone", label: "Microphone", emoji: "🎤" },
       { id: "printer", label: "Printer", emoji: "🖨️" },
@@ -107,10 +107,10 @@
       { target: "🥳", options: ["🥳", "😢", "😄", "😮"] },
     ],
     calmSteps: [
-      { title: "Smell the flower", emoji: "🌸", text: "Breathe in slow." },
-      { title: "Blow the candle", emoji: "🕯️", text: "Breathe out slow." },
-      { title: "Stretch your arms", emoji: "👐", text: "Reach up high." },
-      { title: "Shake it out", emoji: "✨", text: "Tiny wiggle shake." },
+      { id: "flower", title: "Smell the flower", emoji: "🌸", text: "Breathe in through your nose.", helper: "Smell the flower. Big slow breath in." },
+      { id: "candle", title: "Blow the candle", emoji: "🕯️", text: "Breathe out very slow.", helper: "Blow the candle. Long slow breath out." },
+      { id: "stretch", title: "Stretch up high", emoji: "👐", text: "Reach your hands up to the sky.", helper: "Stretch your arms. Make your body long." },
+      { id: "shake", title: "Shake it out", emoji: "✨", text: "Small shake. Let the grumpy feelings go.", helper: "Shake your hands and shoulders." },
     ],
     onoffWakeTargets: [
       { id: "plug", label: "Plug In", emoji: "🔌", hint: "Power first." },

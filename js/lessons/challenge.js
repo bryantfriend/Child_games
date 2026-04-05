@@ -26,7 +26,7 @@
     }
 
     var targetsHtml = h.shuffleArray(challengeTargets.slice()).map(function(target) {
-      return '<button class="teacher-target" type="button" data-challenge-choice="' + target.id + '"><span class="sort-icon">' + target.emoji + '</span><span>' + target.label + '</span></button>';
+      return '<button class="teacher-target" type="button" data-challenge-choice="' + target.id + '">' + h.renderIcon(target, "sort-icon") + '<span>' + target.label + '</span></button>';
     }).join("");
 
     app.dom.gameArea.innerHTML = '<div class="game-card">' + h.getCardHeader('<span class="pill">Estimated 10-12 min</span><span class="pill">Round ' + (challenge.round + 1) + ' / ' + challengeRounds.length + '</span>') + h.getMissionStrip("Island Missions", "Tap when teacher says. Wait on trick rounds.", [{ label: "Watch carefully", done: false }, { label: "Build a streak", done: false }, { label: "Protect your 3 lives", done: false }]) + '<div class="teacher-layout"><div class="teacher-stage"><div class="teacher-icon">' + (round.says ? "🧑‍🏫" : "🤫") + '</div><h3 class="teacher-command">' + round.prompt + '</h3><p class="teacher-subtext">' + (round.says ? "Teacher says it. Tap." : "No teacher says. Wait.") + '</p><div class="lesson-plan"><div class="lesson-chip">Lives ' + "❤️".repeat(challenge.lives) + '</div><div class="lesson-chip">Streak ' + challenge.streak + '</div><div class="lesson-chip">Best ' + challenge.best + '</div></div></div><div class="teacher-targets challenge-grid">' + targetsHtml + '</div></div></div>';

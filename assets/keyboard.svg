@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 220" role="img" aria-labelledby="title desc">
+  <title id="title">Keyboard</title>
+  <desc id="desc">A colorful keyboard with rounded keys.</desc>
+  <defs>
+    <linearGradient id="keyboardBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fbff"/>
+      <stop offset="100%" stop-color="#dbe9ff"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(18 48)">
+    <ellipse cx="102" cy="112" rx="88" ry="14" fill="#bdefff" opacity=".35"/>
+    <path d="M20 20c0-9 7-16 16-16h132c8 0 15 6 16 14l14 68c2 10-6 20-16 20H32c-9 0-17-8-16-18L20 20z" fill="url(#keyboardBody)"/>
+    <g fill="#6f96f7">
+      <rect x="34" y="22" width="22" height="14" rx="5"/>
+      <rect x="62" y="22" width="22" height="14" rx="5"/>
+      <rect x="90" y="22" width="22" height="14" rx="5"/>
+      <rect x="118" y="22" width="22" height="14" rx="5"/>
+      <rect x="146" y="22" width="22" height="14" rx="5"/>
+    </g>
+    <g fill="#ffb347">
+      <rect x="30" y="42" width="22" height="14" rx="5"/>
+      <rect x="58" y="42" width="22" height="14" rx="5"/>
+      <rect x="86" y="42" width="22" height="14" rx="5"/>
+      <rect x="114" y="42" width="22" height="14" rx="5"/>
+      <rect x="142" y="42" width="22" height="14" rx="5"/>
+    </g>
+    <g fill="#ff7eb6">
+      <rect x="26" y="62" width="22" height="14" rx="5"/>
+      <rect x="54" y="62" width="22" height="14" rx="5"/>
+      <rect x="82" y="62" width="22" height="14" rx="5"/>
+      <rect x="110" y="62" width="22" height="14" rx="5"/>
+      <rect x="138" y="62" width="22" height="14" rx="5"/>
+      <rect x="166" y="62" width="22" height="14" rx="5"/>
+    </g>
+    <rect x="56" y="82" width="92" height="14" rx="7" fill="#7fe38a"/>
+  </g>
+</svg>

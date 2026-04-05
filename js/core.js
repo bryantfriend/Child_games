@@ -14,7 +14,7 @@
     onoff: {},
     fun: { timers: [], mode: "hub" },
     sillyTaps: 0,
-    checkIn: { mood: null, path: "pick", emojiRound: 0, calmStep: 0, ready: false },
+    checkIn: { mood: null, path: "start", emojiRound: 0, calmStep: 0, ready: false },
     freePlay: false,
   };
 

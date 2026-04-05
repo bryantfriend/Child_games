@@ -28,3 +28,24 @@ Original prompt: Build this using HTML, CSS and vanilla js. Here is the concept:
 - 2026-04-04: Updated Playwright verification to cover the check-in, new menu, full Lesson 2 completion, Lesson 1 map entry, and direct Games access from the new menu.
 - 2026-04-04: Re-ran Playwright successfully after the menu + Lesson 2 update. Final automated state showed `onoff` completed and Games accessible from the start menu.
 - TODO: Optional cleanup if desired: remove `node_modules` and the Playwright screenshot artifacts now that verification is finished.
+
+- 2026-04-04: Replaced the abstract negative-emotion calm card with a clearer step-by-step breathing and movement guide using purpose-built SVG scenes for flower breathing, candle breathing, stretching, and shaking out feelings.
+- 2026-04-04: Re-ran Playwright after the calm-screen redesign. The app still completed successfully through check-in, Lesson 2, and Games access.
+
+- 2026-04-04: Updated shared button styles so big CTA buttons no longer fall back to pale gray. Added brighter gradients for input/output/calm buttons, polished back buttons, and warmer Fun Zone utility buttons for better readability.
+
+- 2026-04-05: Removed the hard-to-read Lesson 1 map footer text and refreshed the Lesson 1 visuals with kid-friendly SVG computer part art for the computer, monitor, keyboard, and mouse.
+- 2026-04-05: Rebuilt the Computer Island finish activity into a connect-the-dots tracing station with four ICT pictures and kept the map return path available.
+- 2026-04-05: Restored falling confetti animation in CSS and adjusted Lesson 2 Mission 2 to a multi-row step grid so all five order slots stay visible on classroom-sized screens.
+- 2026-04-05: Verified the app with Playwright after the art, tracing, confetti, and Lesson 2 layout fixes. Confirmed the Lesson 1 map and Lesson 2 Mission 2 layouts with fresh screenshots.
+- TODO: Push these Lesson 1 art/tracing fixes and Lesson 2 Mission 2 layout updates to GitHub if the user wants the repo updated.
+
+- 2026-04-05: Added a new Fun Zone arcade game, Techy Road, with a 5-character picker, big tap controls, and moving computer-themed obstacles like keyboards, mice, monitors, printers, USB plugs, and bugs.
+- 2026-04-05: Wired the new road-crossing game into the Fun Zone hub, added responsive styling, and updated Playwright verification to open the new game, choose a character, and move once.
+- 2026-04-05: Re-ran Playwright after adding Techy Road. The full app still passed, and the finish screenshot confirmed the new game layout rendered correctly.
+
+- 2026-04-05: Improved the Computer Island connect-the-dots game with clearer numbered paths, better guide drawings for each ICT part, and a new post-trace coloring mode with a color palette.
+- 2026-04-05: Verified the updated trace/color flow in the browser. Confirmed the picture starts with a visible 1, completes successfully, switches to color mode, and records paint strokes.
+
+- 2026-04-05: Added a new startup flow before the emoji check-in: students now see a Start button, then the opening video from ssets/ICT_Video_Revision_for_nd_Graders.mp4, then after the video ends and a 2 second pause the app advances to the emoji selection screen.
+- 2026-04-05: Updated Playwright verification to cover the new start button and simulated video-end transition before the check-in flow continues.

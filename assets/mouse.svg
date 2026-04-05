@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 220" role="img" aria-labelledby="title desc">
+  <title id="title">Mouse</title>
+  <desc id="desc">A friendly computer mouse with a curly cord.</desc>
+  <defs>
+    <linearGradient id="mouseBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fbff"/>
+      <stop offset="100%" stop-color="#d7e7ff"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(26 16)">
+    <path d="M96 20c20 0 36 8 48 22 16 18 24 44 24 74 0 46-30 76-72 76S24 162 24 116c0-30 8-56 24-74C60 28 76 20 96 20z" fill="url(#mouseBody)"/>
+    <path d="M96 20v54" stroke="#6f96f7" stroke-width="8" stroke-linecap="round"/>
+    <path d="M96 74c-22 0-34-10-34-32" fill="none" stroke="#b7cdf8" stroke-width="6" stroke-linecap="round"/>
+    <path d="M96 74c22 0 34-10 34-32" fill="none" stroke="#b7cdf8" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="84" cy="108" r="6" fill="#31507a"/>
+    <circle cx="108" cy="108" r="6" fill="#31507a"/>
+    <path d="M78 126q18 14 36 0" fill="none" stroke="#31507a" stroke-linecap="round" stroke-width="6"/>
+    <path d="M132 20c14-24 40-26 56-10 14 14 14 34-2 46" fill="none" stroke="#ffb347" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="186" cy="60" r="10" fill="#ffb347"/>
+  </g>
+</svg>

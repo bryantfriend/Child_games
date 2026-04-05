@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 220" role="img" aria-labelledby="title desc">
+  <title id="title">Monitor</title>
+  <desc id="desc">A cheerful computer monitor with a bright screen.</desc>
+  <defs>
+    <linearGradient id="monitorBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#6f96f7"/>
+      <stop offset="100%" stop-color="#355da6"/>
+    </linearGradient>
+    <linearGradient id="monitorScreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#aaf7ff"/>
+      <stop offset="100%" stop-color="#51c8ff"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(20 24)">
+    <ellipse cx="100" cy="170" rx="80" ry="14" fill="#bdefff" opacity=".35"/>
+    <rect x="16" y="0" width="168" height="118" rx="24" fill="url(#monitorBody)"/>
+    <rect x="30" y="14" width="140" height="90" rx="18" fill="url(#monitorScreen)"/>
+    <path d="M56 32c20-16 63-14 92 8-24 5-64 9-92-8z" fill="#ffffff" opacity=".25"/>
+    <circle cx="84" cy="60" r="6" fill="#244667"/>
+    <circle cx="116" cy="60" r="6" fill="#244667"/>
+    <path d="M76 78q24 16 48 0" fill="none" stroke="#244667" stroke-linecap="round" stroke-width="7"/>
+    <rect x="92" y="118" width="16" height="24" rx="8" fill="#355da6"/>
+    <rect x="62" y="140" width="76" height="14" rx="7" fill="#2a4f83"/>
+    <circle cx="174" cy="28" r="18" fill="#fff3a6" opacity=".5"/>
+  </g>
+</svg>
