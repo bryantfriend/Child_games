@@ -1,20 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 220" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 420" role="img" aria-labelledby="title desc">
   <title id="title">Oxford International School</title>
-  <desc id="desc">Oxford International School program badge.</desc>
-  <g transform="translate(12 10)">
-    <circle cx="118" cy="102" r="95" fill="none" stroke="#ff1d12" stroke-width="6"/>
-    <circle cx="118" cy="102" r="88" fill="none" stroke="#383a82" stroke-width="5"/>
+  <desc id="desc">Oxford International School logo with circular emblem and bold red and blue wordmark.</desc>
+  <g transform="translate(18 18)">
+    <circle cx="190" cy="190" r="172" fill="none" stroke="#ff1d17" stroke-width="10"/>
+    <circle cx="190" cy="190" r="160" fill="none" stroke="#32357e" stroke-width="8"/>
 
-    <g transform="translate(14 12)">
-      <path fill="#383a82" d="M72 34c1 28-11 48-42 59 29-1 46 10 52 30 4-17 18-34 34-48-21 5-36 1-44-16 1-9 1-17 0-25z"/>
-      <circle cx="58" cy="47" r="10" fill="#383a82"/>
-      <path fill="#ff1d12" d="M103 39c5 24 22 36 55 39-28 5-40 18-38 46-15-17-22-42-17-85z"/>
-      <circle cx="116" cy="55" r="10" fill="#ff1d12"/>
-      <path fill="#353046" d="M24 144c35-10 68-6 104 30 24-49 76-86 150-103-17-10-28-25-32-43-3 15-17 32-41 56-29 29-51 54-65 86-22-40-59-59-116-63z"/>
-      <path fill="#353046" d="M24 145c47-5 82 10 113 42 39-48 90-77 171-84-74 4-131 31-172 79-31-28-69-42-112-37z"/>
+    <g transform="translate(20 18)">
+      <circle cx="130" cy="96" r="16" fill="#32357e"/>
+      <path fill="#32357e" d="M124 114c-5 24-22 49-66 60 44-4 66 12 75 48 6-26 23-55 48-78-31 7-50 2-58-23 2-2 2-5 1-7z"/>
+
+      <circle cx="238" cy="116" r="16" fill="#ff1d17"/>
+      <path fill="#ff1d17" d="M226 124c9 33 35 50 87 54-43 11-61 33-55 83-31-24-49-67-52-137 7 0 13 0 20 0z"/>
+
+      <path fill="#312c44" d="M40 246c52-10 102-1 155 50 43-81 131-144 268-164-34-18-54-46-60-79-10 30-43 69-92 113-56 50-93 102-115 154-31-54-84-79-156-74z"/>
+      <path fill="#312c44" d="M38 250c73 1 123 22 163 64 63-73 150-114 261-121-109 20-189 63-246 134-44-40-102-66-178-77z"/>
     </g>
 
-    <text x="250" y="148" font-size="118" font-weight="900" fill="#ff1d12" font-family="Arial Black, Arial, Helvetica, sans-serif" letter-spacing="1">OXFORD</text>
-    <text x="252" y="194" font-size="40" font-weight="900" fill="#383a82" font-family="Arial Black, Arial, Helvetica, sans-serif">INTERNATIONAL SCHOOL</text>
+    <text x="392" y="262" font-size="190" font-weight="900" fill="#ff1d17" font-family="Arial Black, Arial, Helvetica, sans-serif" letter-spacing="1">OXFORD</text>
+    <text x="396" y="352" font-size="74" font-weight="900" fill="#3d2fd1" font-family="Arial Black, Arial, Helvetica, sans-serif">INTERNATIONAL SCHOOL</text>
   </g>
 </svg>

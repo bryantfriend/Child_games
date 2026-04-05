@@ -1,15 +1,26 @@
 (function () {
   var app = window.ICTApp;
-  var wakeTargets = app.data.onoffWakeTargets;
   var onoffSteps = app.data.onoffSteps;
   var onoffScenarios = app.data.onoffScenarios;
   var routineRounds = app.data.onoffRoutineRounds;
   var routineChoices = app.data.onoffRoutineChoices;
   var h = app.helpers;
+  var moduleOrder = ["wake", "steps", "power", "safe"];
+  var funGames = [
+    { id: "fix", emoji: "🖥️", title: "Boot-Up Sequence", text: "Tap at the right time to get the computer ready." },
+    { id: "power", emoji: "🔌", title: "Plug It In!", text: "Match cables and ports like a tech helper." },
+    { id: "screen", emoji: "🎨", title: "Screen Paint Splash!", text: "Take a calm color break on the screen." },
+    { id: "road", emoji: "🛣️", title: "Techy Road", text: "Cross past tech obstacles with your hero." }
+  ];
 
   function start() {
     app.state.onoff = {
-      mission: 1,
+      view: "map",
+      module: null,
+      moduleDone: { wake: false, steps: false, power: false, safe: false },
+      lessonDone: false,
+      returnTo: null,
+      mission: 0,
       wakeHits: [],
       plugConnected: false,
       wakeStage: "plug",
@@ -20,6 +31,7 @@
       holdPhase: "turn_on",
       holdValue: 0,
       holdTimer: null,
+      safeStage: "scenario",
       scenarioIndex: 0,
       routineIndex: 0,
       routineLives: 3,
@@ -30,25 +42,64 @@
 
   function render() {
     var state = app.state.onoff;
+    if (state.view === "map") {
+      renderMap();
+      return;
+    }
+    if (state.view === "fun") {
+      renderFunMap();
+      return;
+    }
+
     var missions = [
-      { label: "1. Wake the computer", done: state.mission > 1 },
-      { label: "2. Put steps in order", done: state.mission > 2 },
-      { label: "3. Hold power on and off", done: state.mission > 3 },
-      { label: "4. Make safe choices", done: state.mission > 4 },
-      { label: "5. Class routine challenge", done: state.mission > 5 }
+      { label: "1. Wake It Up", done: state.moduleDone.wake },
+      { label: "2. Boot Steps", done: state.moduleDone.steps },
+      { label: "3. Power Practice", done: state.moduleDone.power },
+      { label: "4. Safe Choices", done: state.moduleDone.safe }
     ];
     var body = "";
+    if (state.module === "wake") body = renderWakeMission();
+    else if (state.module === "steps") body = renderStepsMission();
+    else if (state.module === "power") body = renderHoldMission();
+    else body = renderSafeMission();
 
-    if (state.mission === 1) body = renderWakeMission();
-    else if (state.mission === 2) body = renderStepsMission();
-    else if (state.mission === 3) body = renderHoldMission();
-    else if (state.mission === 4) body = renderScenarioMission();
-    else if (state.mission === 5) body = renderRoutineMission();
-    else body = '<div class="win-panel onoff-win"><h3>Lesson 2 complete!</h3><p>You can turn a computer on and off the safe way.</p><button class="big-choice output-choice calm-button" type="button" id="backToMenuBtn">Back to Menu</button></div>';
-
-    app.dom.gameArea.innerHTML = '<div class="game-card">' + h.getCardHeader('<span class="pill">Lesson 2</span><span class="pill">35 to 40 min</span>', "backToMenu", "⬅ Menu") + h.getMissionStrip("Turning a Computer On / Off", "Tap, drag, hold, and choose the safe next step.", missions) + body + '</div>';
+    app.dom.gameArea.innerHTML = '<div class="game-card">' + h.getCardHeader('<span class="pill">Lesson 2</span><span class="pill">4 modules</span>', "backToMenu", "⬅ Menu") + h.getMissionStrip("Turning a Computer On / Off", "Finish the 4 lesson jobs. Then unlock the lesson Fun Zone.", missions) + body + '</div>';
     bindMenuBack();
     bindMissionEvents();
+  }
+
+  function renderMap() {
+    var state = app.state.onoff;
+    var modules = [
+      { id: "wake", title: "1. Wake It Up", text: "Plug in and press power.", emoji: "🔌", done: state.moduleDone.wake },
+      { id: "steps", title: "2. Boot Steps", text: "Put the startup steps in order.", emoji: "🪜", done: state.moduleDone.steps },
+      { id: "power", title: "3. Power Practice", text: "Hold to turn on and off.", emoji: "⏻", done: state.moduleDone.power },
+      { id: "safe", title: "4. Safe Choices", text: "Pick the safe computer action.", emoji: "✅", done: state.moduleDone.safe }
+    ];
+    var unlocked = allModulesDone();
+    var cards = modules.map(function(module) {
+      return '<button class="lesson-menu-card onoff-map-card ' + (module.done ? "onoff-map-card-done" : "") + '" type="button" data-onoff-open="' + module.id + '">' +
+        '<span class="lesson-menu-emoji onoff-map-emoji">' + module.emoji + '</span><strong>' + module.title + '</strong><span>' + module.text + '</span><span class="onoff-map-badge">' + (module.done ? "Done +25" : "Play") + '</span></button>';
+    }).join("");
+    var funCard = '<button class="lesson-menu-card onoff-map-card onoff-map-card-fun ' + (unlocked ? "" : "locked-island") + '" type="button" data-onoff-open="fun"' + (unlocked ? "" : " disabled") + '><span class="lesson-menu-emoji onoff-map-emoji">🎉</span><strong>Fun Zone</strong><span>Unlocked after the 4 lesson modules.</span><span class="onoff-map-badge">' + (unlocked ? "Unlocked!" : "Locked") + '</span></button>';
+    app.dom.gameArea.innerHTML = '<div class="game-card">' + h.getCardHeader('<span class="pill">Lesson 2 map</span><span class="pill">4 modules + Fun Zone</span>', "backToMenu", "⬅ Menu") + '<div class="mission-strip"><div><h3>Power Lesson Map</h3><p>Tap each lesson card. Earn 25 stars for each finished module.</p></div><div class="lesson-plan"><div class="lesson-chip">Done ' + countDone() + ' / 4</div><div class="lesson-chip">' + (unlocked ? "Fun Zone open" : "Finish 4 to unlock") + '</div></div></div><div class="welcome-card menu-card-screen onoff-map-screen"><div class="onoff-map-decor onoff-map-decor-left" aria-hidden="true">⚡</div><div class="onoff-map-decor onoff-map-decor-right" aria-hidden="true">💡</div><div class="onoff-map-river" aria-hidden="true"></div><div class="welcome-stack onoff-map-stack"><strong>💻</strong><h3>Lesson 2 Adventure</h3><p class="hero-text">Finish the four power islands, then unlock the bonus Fun Zone games.</p><div class="lesson-menu-grid onoff-map-grid">' + cards + funCard + '</div></div></div></div>';
+    bindMenuBack();
+    bindMapEvents();
+  }
+
+  function renderFunMap() {
+    var cards = funGames.map(function(game) {
+      return '<button class="fun-button fun-card-button" type="button" data-onoff-fun="' + game.id + '"><span class="fun-card-emoji">' + game.emoji + '</span><span class="fun-card-title">' + game.title + '</span><span class="fun-card-text">' + game.text + '</span></button>';
+    }).join("");
+    app.dom.gameArea.innerHTML = '<div class="game-card">' + h.getCardHeader('<span class="pill">Lesson 2 Fun Zone</span><span class="pill">Bonus play</span>', "backToMenu", "⬅ Menu") + '<div class="mission-strip"><div><h3>Power Fun Zone</h3><p>Play bonus games after finishing Lesson 2.</p></div><div class="lesson-plan"><div class="lesson-chip chip-done">4 lessons done</div><div class="lesson-chip chip-done">Fun Zone unlocked</div></div></div><div class="fun-hub">' + cards + '</div><div class="choice-row"><button class="big-choice output-choice calm-button" type="button" id="onoffMapBtn">Back To Lesson 2 Map</button></div></div>';
+    bindMenuBack();
+    var mapBtn = document.getElementById("onoffMapBtn");
+    if (mapBtn) mapBtn.addEventListener("click", showMap);
+    bindMany("[data-onoff-fun]", function(btn) {
+      btn.addEventListener("click", function() {
+        launchFunGame(btn.dataset.onoffFun);
+      });
+    });
   }
 
   function renderWakeMission() {
@@ -58,11 +109,11 @@
     return '<div class="build-layout">' +
       '<div class="computer-board"><div class="onoff-hero-card onoff-power-scene">' + powerScene(plugged, booting, progress) +
       '<div class="onoff-speech">' + (plugged ? (booting ? "The computer is starting up..." : "Now press the power button.") : "Drag the plug into the wall first.") + '</div></div></div>' +
-      '<div class="tray"><div class="pill">Mission 1 of 5</div><div class="draggable-list">' +
+      '<div class="tray"><div class="pill">Module 1 of 4</div><div class="draggable-list">' +
       '<div class="draggable-item ' + (plugged ? "placed" : "") + '" data-kind="onoff-plug" data-id="plug"><span class="draggable-item-emoji">🔌</span><div><strong>Power Plug</strong><div>Drag into the wall socket.</div></div></div>' +
       '</div><button class="big-choice onoff-power-button ' + (plugged ? "power-button-ready" : "power-button-off") + ' ' + (booting ? "power-button-booting" : "") + '" type="button" id="wakePowerBtn"' + (plugged ? "" : " disabled") + '>⏻</button>' +
       '<div class="lesson-plan"><div class="lesson-chip">Plug ' + (plugged ? "done" : "first") + '</div><div class="lesson-chip">Power ' + (booting ? "starting" : (plugged ? "ready" : "wait")) + '</div></div>' +
-      '<p class="hint">1. Drag the plug into the wall. 2. Press the power button.</p></div>' +
+      '<p class="hint">1. Drag the plug into the wall. 2. Press the power button.</p><div class="choice-row"><button class="fun-button" type="button" id="backToLessonMapBtn">Back To Lesson 2 Map</button></div></div>' +
       '</div>';
   }
 
@@ -80,7 +131,7 @@
 
     return '<div class="build-layout">' +
       '<div class="computer-board"><div class="drop-zone-grid onoff-step-grid">' + slots + '</div><div class="onoff-step-art">' + bootScene(app.state.onoff.stepOrder.length) + '</div></div>' +
-      '<div class="tray"><div class="pill">Mission 2 of 5</div><div class="draggable-list">' + cards + '</div><p class="hint">Drag the steps into the correct order.</p></div>' +
+      '<div class="tray"><div class="pill">Module 2 of 4</div><div class="draggable-list">' + cards + '</div><p class="hint">Drag the steps into the correct order.</p><div class="choice-row"><button class="fun-button" type="button" id="backToLessonMapBtn">Back To Lesson 2 Map</button></div></div>' +
       '</div>';
   }
 
@@ -92,7 +143,7 @@
         '<div class="power-ring"><div class="power-ring-fill" style="height:' + meter + '%;"></div><button class="power-hold-button" type="button" id="holdPowerBtn">⏻</button></div>' +
         '<div class="onoff-speech">' + (phase === "turn_on" ? "Press and hold to turn ON." : "Press and hold to turn OFF.") + '</div>' +
       '</div>' +
-      '<div class="lesson-plan"><div class="lesson-chip">Phase: ' + (phase === "turn_on" ? "Turn On" : "Turn Off") + '</div><div class="lesson-chip">Hold: ' + meter + '%</div></div>' +
+      '<div class="lesson-plan"><div class="lesson-chip">Phase: ' + (phase === "turn_on" ? "Turn On" : "Turn Off") + '</div><div class="lesson-chip">Hold: ' + meter + '%</div></div><div class="choice-row"><button class="fun-button" type="button" id="backToLessonMapBtn">Back To Lesson 2 Map</button></div>' +
       '</div>';
   }
 
@@ -125,6 +176,12 @@
       '<div class="teacher-targets challenge-grid">' + choices + '</div></div>';
   }
 
+  function renderSafeMission() {
+    var top = '<div class="choice-row onoff-map-actions"><button class="fun-button" type="button" id="backToLessonMapBtn">Back To Lesson 2 Map</button></div>';
+    if (app.state.onoff.safeStage === "scenario") return renderScenarioMission() + top;
+    return renderRoutineMission() + top;
+  }
+
   function bindMissionEvents() {
     h.bindDragSystem();
 
@@ -146,8 +203,8 @@
     var wakePowerBtn = document.getElementById("wakePowerBtn");
     if (wakePowerBtn) wakePowerBtn.addEventListener("click", startWakeBoot);
 
-    var menuBtn = document.getElementById("backToMenuBtn");
-    if (menuBtn) menuBtn.addEventListener("click", function() { app.renderMainMenu(); });
+    var mapBtn = document.getElementById("backToLessonMapBtn");
+    if (mapBtn) mapBtn.addEventListener("click", showMap);
   }
 
   function bindMany(selector, binder) {
@@ -178,8 +235,7 @@
     app.state.onoff.stepOrder.push(expected);
     app.processAction('BUMP_STARS', { amount: 2 });
     if (app.state.onoff.stepOrder.length >= onoffSteps.length) {
-      app.state.onoff.mission = 3;
-      h.showFeedback("Boot steps complete!", "success");
+      completeModule("steps", "Boot steps complete!");
     } else {
       h.showFeedback("Good order!", "success");
     }
@@ -220,10 +276,8 @@
       render();
       return;
     }
-    app.state.onoff.mission = 4;
     app.state.onoff.holdValue = 100;
-    h.showFeedback("Power practice done!", "success");
-    render();
+    completeModule("power", "Power practice done!");
   }
 
   function startWakeBoot() {
@@ -241,9 +295,8 @@
         app.processAction('BUMP_STARS', { amount: 3 });
         h.showFeedback("Computer starting!", "success");
         app.state.onoff.wakeBootTimer = setTimeout(function() {
-          app.state.onoff.mission = 2;
           app.state.onoff.wakeHits = ["plug", "button", "screen"];
-          render();
+          completeModule("wake", "Wake-up lesson complete!");
         }, 900);
       }
       render();
@@ -260,8 +313,8 @@
     app.processAction('BUMP_STARS', { amount: 3 });
     app.state.onoff.scenarioIndex += 1;
     if (app.state.onoff.scenarioIndex >= onoffScenarios.length) {
-      app.state.onoff.mission = 5;
-      h.showFeedback("Safe choices mastered!", "success");
+      app.state.onoff.safeStage = "routine";
+      h.showFeedback("Safe choices mastered! Final round next.", "success");
     } else {
       h.showFeedback("Yes! Safe step.", "success");
     }
@@ -276,8 +329,7 @@
       app.processAction('BUMP_STARS', { amount: 2 });
       h.showFeedback("Correct!", "success");
       if (app.state.onoff.routineIndex >= routineRounds.length) {
-        app.processAction('COMPLETE_GAME', { id: "onoff" });
-        app.state.onoff.mission = 6;
+        completeModule("safe", "Safe computer choices complete!");
       }
     } else {
       app.state.onoff.routineLives -= 1;
@@ -298,6 +350,100 @@
   function bindMenuBack() {
     var button = document.getElementById("backToMenu");
     if (button) button.addEventListener("click", function() { app.renderMainMenu(); });
+  }
+
+  function bindMapEvents() {
+    bindMany("[data-onoff-open]", function(btn) {
+      btn.addEventListener("click", function() {
+        if (btn.dataset.onoffOpen === "fun") {
+          if (allModulesDone()) {
+            app.state.onoff.view = "fun";
+            render();
+          }
+          return;
+        }
+        openModule(btn.dataset.onoffOpen);
+      });
+    });
+  }
+
+  function openModule(moduleId) {
+    var state = app.state.onoff;
+    state.view = "module";
+    state.module = moduleId;
+    state.returnTo = null;
+    if (moduleId === "wake") {
+      state.mission = 1;
+      state.plugConnected = false;
+      state.wakeStage = "plug";
+      state.wakeProgress = 0;
+      state.wakeHits = [];
+    } else if (moduleId === "steps") {
+      state.mission = 2;
+      state.stepOrder = [];
+    } else if (moduleId === "power") {
+      state.mission = 3;
+      state.holdPhase = "turn_on";
+      state.holdValue = 0;
+    } else if (moduleId === "safe") {
+      state.mission = 4;
+      state.safeStage = "scenario";
+      state.scenarioIndex = 0;
+      state.routineIndex = 0;
+      state.routineLives = 3;
+      state.routineStreak = 0;
+    }
+    render();
+  }
+
+  function showMap() {
+    app.processAction('SET_GAME', { id: "onoff" });
+    app.state.onoff.view = "map";
+    app.state.onoff.module = null;
+    app.state.onoff.returnTo = null;
+    if (app.dom.panelTitle) app.dom.panelTitle.textContent = app.data.games.onoff.title;
+    if (app.dom.panelSubtitle) app.dom.panelSubtitle.textContent = app.data.games.onoff.subtitle + " Estimated time: " + app.data.games.onoff.duration + ".";
+    document.getElementById("game-overlay").style.display = "flex";
+    render();
+  }
+
+  function countDone() {
+    var count = 0;
+    var i;
+    for (i = 0; i < moduleOrder.length; i++) if (app.state.onoff.moduleDone[moduleOrder[i]]) count += 1;
+    return count;
+  }
+
+  function allModulesDone() {
+    return countDone() === moduleOrder.length;
+  }
+
+  function completeModule(moduleId, message) {
+    var state = app.state.onoff;
+    if (!state.moduleDone[moduleId]) {
+      state.moduleDone[moduleId] = true;
+      app.processAction('BUMP_STARS', { amount: 25 });
+    }
+    if (allModulesDone() && !state.lessonDone) {
+      state.lessonDone = true;
+      app.processAction('MARK_COMPLETE', { id: "onoff" });
+      h.spawnConfetti(54, true);
+      h.showFeedback("Lesson 2 Fun Zone unlocked!", "success");
+    } else {
+      h.spawnConfetti(28, false);
+      h.showFeedback(message + " +25 stars!", "success");
+    }
+    state.view = "map";
+    state.module = null;
+    render();
+  }
+
+  function launchFunGame(id) {
+    app.state.onoff.returnTo = "onoffMap";
+    if (id === "fix") app.funGames.fix.start();
+    else if (id === "power") app.funGames.power.start();
+    else if (id === "screen") app.funGames.screen.start();
+    else if (id === "road") app.funGames.road.start();
   }
 
   function repeatIcon(icon, count) {
@@ -370,5 +516,5 @@
       '</div>';
   }
 
-  app.lessons.onoff = { start: start, render: render, handleDrop: handleDrop };
+  app.lessons.onoff = { start: start, render: render, handleDrop: handleDrop, showMap: showMap };
 })();

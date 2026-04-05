@@ -22,18 +22,25 @@
     return '<div class="calm-scene calm-scene-shake"><svg viewBox="0 0 420 280" class="calm-guide-svg" aria-hidden="true"><rect x="20" y="18" width="380" height="244" rx="34" fill="#fff4fb"/><circle cx="210" cy="100" r="34" fill="#ffd7b1"/><path d="M180 96c10-20 58-28 74 4" fill="#6d4c41"/><circle cx="196" cy="104" r="4" fill="#31445f"/><circle cx="220" cy="104" r="4" fill="#31445f"/><path d="M198 118q12 9 24 0" fill="none" stroke="#31445f" stroke-width="4" stroke-linecap="round"/><path d="M184 134h52v72h-52z" fill="#ffb2cc" rx="20"/><path class="calm-shake-arm-left" d="M184 148l-36 28" fill="none" stroke="#ffd7b1" stroke-width="14" stroke-linecap="round"/><path class="calm-shake-arm-right" d="M236 148l36 28" fill="none" stroke="#ffd7b1" stroke-width="14" stroke-linecap="round"/><path d="M198 205l-18 42" fill="none" stroke="#7d8cff" stroke-width="14" stroke-linecap="round"/><path d="M222 205l18 42" fill="none" stroke="#7d8cff" stroke-width="14" stroke-linecap="round"/><g class="calm-wiggle-lines"><path d="M120 138q12 10 0 20" fill="none" stroke="#57c6ff" stroke-width="7" stroke-linecap="round"/><path d="M304 138q12 10 0 20" fill="none" stroke="#57c6ff" stroke-width="7" stroke-linecap="round"/><path d="M154 82q10 10 0 20" fill="none" stroke="#ff8fb5" stroke-width="7" stroke-linecap="round"/><path d="M266 82q10 10 0 20" fill="none" stroke="#ff8fb5" stroke-width="7" stroke-linecap="round"/></g></svg><div class="calm-caption-badge">Shake small</div></div>';
   }
 
-  function renderCalmPrompts(step, stepIndex) {
-    var prompts = {
-      flower: ["1. Put your hand on your tummy.", "2. Smell the flower.", "3. Breathe in slow."],
-      candle: ["1. Keep shoulders soft.", "2. Blow the candle.", "3. Breathe out slow."],
-      stretch: ["1. Stand or sit tall.", "2. Reach both hands up.", "3. Hold for one slow breath."],
+    function renderCalmPrompts(step, stepIndex) {
+      var prompts = {
+        flower: ["1. Put your hand on your tummy.", "2. Smell the flower.", "3. Breathe in slow."],
+        candle: ["1. Keep shoulders soft.", "2. Blow the candle.", "3. Breathe out slow."],
+        stretch: ["1. Stand or sit tall.", "2. Reach both hands up.", "3. Hold for one slow breath."],
       shake: ["1. Wiggle fingers.", "2. Shake shoulders softly.", "3. Let bad feelings go."],
     };
     var list = prompts[step.id] || [];
-    return list.map(function(item) {
-      return '<div class="calm-prompt">' + item + '</div>';
-    }).join("");
-  }
+      return list.map(function(item) {
+        return '<div class="calm-prompt">' + item + '</div>';
+      }).join("");
+    }
+
+    function renderEmojiBackdrop() {
+      var sprites = ["😀", "😄", "😆", "😍", "🤩", "😎", "🥳", "😊", "🌟", "💫", "🎈", "🫧"];
+      return sprites.map(function(sprite, index) {
+        return '<span class="emoji-backdrop-sprite sprite-' + index + '">' + sprite + '</span>';
+      }).join("");
+    }
 
   function renderWelcome() {
     app.processAction('SET_GAME', { id: null });
@@ -68,7 +75,7 @@
     }
 
     if (app.state.checkIn.path === "video") {
-       app.dom.gameArea.innerHTML = '<div class="welcome-card intro-screen"><div class="intro-panel intro-video-panel"><div class="welcome-stack intro-stack"><div class="intro-badge">Oxford ICT Adventure</div><h3>Watch and get ready</h3><p class="hero-text">The game will start after the video.</p><div class="intro-video-shell"><video id="introVideo" class="intro-video" playsinline preload="auto"><source src="assets/ICT_Video_Revision_for_nd_Graders.mp4" type="video/mp4"></video></div></div></div></div>';
+       app.dom.gameArea.innerHTML = '<div class="welcome-card intro-screen"><div class="intro-panel intro-video-panel"><div class="welcome-stack intro-stack"><div class="intro-badge">Oxford ICT Adventure</div><h3>Watch and get ready</h3><p class="hero-text">The game will start after the video.</p><div class="intro-video-shell"><video id="introVideo" class="intro-video" playsinline preload="auto" muted><source src="assets/ICT_Video_Revision_for_nd_Graders.mp4" type="video/mp4"></video></div></div></div></div>';
        bindIntroVideo();
        return;
     }
@@ -88,18 +95,18 @@
        return;
     }
 
-    if (app.state.checkIn.path === "emoji") {
-       var round = emojiGameRounds[app.state.checkIn.emojiRound];
-       var mood = moodChoices.filter(function(m) { return m.id === app.state.checkIn.mood; })[0];
-       var emojiHtml = h.shuffleArray(round.options.slice()).map(function(emoji) {
-         return '<button class="emoji-choice emoji-target" type="button" data-emoji-game="' + emoji + '"><span class="emoji-face">' + emoji + '</span></button>';
-       }).join("");
-       app.dom.gameArea.innerHTML = '<div class="welcome-card"><div class="welcome-stack"><strong>' + (mood ? mood.emoji : "😄") + '</strong><h3>Emoji Game</h3><p class="hero-text">Tap this face: <span class="target-emoji">' + round.target + '</span></p><div class="emoji-grid mini-game-grid">' + emojiHtml + '</div><div class="lesson-plan"><div class="lesson-chip">Round ' + (app.state.checkIn.emojiRound + 1) + ' / ' + emojiGameRounds.length + '</div></div></div></div>';
-       var emojiBtns = app.dom.gameArea.querySelectorAll("[data-emoji-game]");
-       var j;
-       for (j = 0; j < emojiBtns.length; j++) {
-         (function(btn) {
-           btn.addEventListener("click", function() { handleEmojiGame(btn.dataset.emojiGame); });
+      if (app.state.checkIn.path === "emoji") {
+        var round = emojiGameRounds[app.state.checkIn.emojiRound];
+        var mood = moodChoices.filter(function(m) { return m.id === app.state.checkIn.mood; })[0];
+        var emojiHtml = h.shuffleArray(round.options.slice()).map(function(emoji) {
+          return '<button class="emoji-choice emoji-target" type="button" data-emoji-game="' + emoji + '"><span class="emoji-face">' + emoji + '</span></button>';
+        }).join("");
+        app.dom.gameArea.innerHTML = '<div class="welcome-card emoji-game-screen"><div class="emoji-backdrop" aria-hidden="true">' + renderEmojiBackdrop() + '</div><div class="welcome-stack emoji-game-panel"><strong>' + (mood ? mood.emoji : "😄") + '</strong><h3>Emoji Game</h3><p class="hero-text">Tap this face: <span class="target-emoji">' + round.target + '</span></p><div class="emoji-grid mini-game-grid">' + emojiHtml + '</div><div class="lesson-plan"><div class="lesson-chip">Round ' + (app.state.checkIn.emojiRound + 1) + ' / ' + emojiGameRounds.length + '</div></div></div></div>';
+        var emojiBtns = app.dom.gameArea.querySelectorAll("[data-emoji-game]");
+        var j;
+        for (j = 0; j < emojiBtns.length; j++) {
+          (function(btn) {
+            btn.addEventListener("click", function() { handleEmojiGame(btn.dataset.emojiGame); });
          })(emojiBtns[j]);
        }
        return;
@@ -129,6 +136,8 @@
   function bindIntroVideo() {
     var video = document.getElementById("introVideo");
     if (!video) return;
+    video.muted = true;
+    video.volume = 0;
     var goNext = function() {
       if (introDelay) clearTimeout(introDelay);
       introDelay = setTimeout(function() {

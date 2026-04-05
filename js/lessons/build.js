@@ -5,6 +5,7 @@
   var buildPrompts = app.data.buildPrompts;
   var h = app.helpers;
   var traceOrder = ["system", "mouse", "keyboard", "monitor"];
+  var imageCache = {};
   var traceTemplates = {
     system: { title: "Computer", color: "#4d7de0", text: "Trace the computer from 1 to 8.", points: [{ x: 284, y: 46 }, { x: 420, y: 46 }, { x: 420, y: 204 }, { x: 284, y: 204 }, { x: 326, y: 68 }, { x: 376, y: 68 }, { x: 376, y: 176 }, { x: 326, y: 176 }] },
     mouse: { title: "Mouse", color: "#ff9f43", text: "Trace the mouse from 1 to 8.", points: [{ x: 486, y: 162 }, { x: 504, y: 96 }, { x: 560, y: 62 }, { x: 622, y: 88 }, { x: 642, y: 146 }, { x: 620, y: 208 }, { x: 554, y: 226 }, { x: 500, y: 204 }] },
@@ -37,6 +38,7 @@
   function render() {
     var build = app.state.build;
     var missions = [{ label: "1. Build the computer", done: build.mission > 1 }, { label: "2. Match each job", done: build.mission > 2 }, { label: "3. Quick tap challenge", done: build.mission > 3 }];
+    var isColorMode = build.mission === 4 && build.traceMode[build.traceTemplate] === "color";
     var body = "";
 
     if (build.mission === 1) {
@@ -65,7 +67,7 @@
       body = renderFinishPanel();
     }
 
-    app.dom.gameArea.innerHTML = '<div class="game-card">' + h.getCardHeader('<span class="pill">Estimated 8-10 min</span><span class="pill">Stars: ' + app.state.stars + '</span>') + h.getMissionStrip("Island Missions", "3 easy jobs: build, match, tap.", missions) + body + '</div>';
+    app.dom.gameArea.innerHTML = '<div class="game-card ' + (isColorMode ? "build-color-mode" : "") + '">' + h.getCardHeader('<span class="pill">Estimated 8-10 min</span><span class="pill">Stars: ' + app.state.stars + '</span>') + (isColorMode ? "" : h.getMissionStrip("Island Missions", "3 easy jobs: build, match, tap.", missions)) + body + '</div>';
 
     h.bindBackToMap();
     h.bindDragSystem();
@@ -85,7 +87,7 @@
     var palette = paintColors.map(function(color) {
       return '<button class="paint-color ' + (build.paintColor === color ? "paint-color-on" : "") + '" type="button" data-trace-color="' + color + '" style="background:' + color + '"></button>';
     }).join("");
-    return '<div class="win-panel build-finish-panel"><h3>Computer Island complete!</h3><p>' + (isColorMode ? "Color the picture any way you like." : "Connect the dots to draw the ICT parts. Start at 1, then 2, then 3.") + '</p><div class="build-finish-draw"><div class="trace-toolbar"><div class="trace-choice-row">' + buttons + '</div><div class="lesson-plan"><div class="lesson-chip">Picture ' + (traceOrder.indexOf(build.traceTemplate) + 1) + ' / ' + traceOrder.length + '</div><div class="lesson-chip">Finished ' + countCompletedTraces() + ' / ' + traceOrder.length + '</div><div class="lesson-chip">' + (isColorMode ? "Color time" : "Dot time") + '</div></div>' + (isColorMode ? '<div class="paint-palette trace-palette">' + palette + '</div>' : '') + '</div><div class="trace-stage"><div class="trace-card"><div class="trace-card-top"><strong>' + template.title + '</strong><span>' + (isColorMode ? "Trace done. Now color it in!" : template.text) + '</span></div><canvas id="buildTraceCanvas" class="paint-canvas build-finish-canvas trace-canvas" width="820" height="280"></canvas></div></div></div><div class="choice-row"><button class="fun-button" type="button" id="buildClearBtn">' + (isColorMode ? "Clear Colors" : "Restart Picture") + '</button><button class="fun-button" type="button" id="buildNextTraceBtn">Next Picture</button><button class="big-choice output-choice calm-button" type="button" id="buildMapBtn">Back To Map</button></div></div>';
+    return '<div class="win-panel build-finish-panel ' + (isColorMode ? "build-finish-panel-color" : "") + '">' + (isColorMode ? "" : '<h3>Computer Island complete!</h3><p>Connect the dots to draw the ICT parts. Start at 1, then 2, then 3.</p>') + '<div class="build-finish-draw"><div class="trace-toolbar"><div class="trace-choice-row">' + buttons + '</div><div class="lesson-plan"><div class="lesson-chip">Picture ' + (traceOrder.indexOf(build.traceTemplate) + 1) + ' / ' + traceOrder.length + '</div><div class="lesson-chip">Finished ' + countCompletedTraces() + ' / ' + traceOrder.length + '</div><div class="lesson-chip">' + (isColorMode ? "Color time" : "Dot time") + '</div></div>' + (isColorMode ? '<div class="paint-palette trace-palette">' + palette + '</div>' : '') + '</div><div class="trace-stage"><div class="trace-card ' + (isColorMode ? "trace-card-color" : "") + '">' + (isColorMode ? "" : '<div class="trace-card-top"><strong>' + template.title + '</strong><span>' + template.text + '</span></div>') + '<canvas id="buildTraceCanvas" class="paint-canvas build-finish-canvas trace-canvas" width="820" height="' + (isColorMode ? '470' : '320') + '"></canvas></div></div></div><div class="choice-row"><button class="fun-button" type="button" id="buildClearBtn">' + (isColorMode ? "Clear Colors" : "Restart Picture") + '</button><button class="fun-button" type="button" id="buildNextTraceBtn">' + (isColorMode ? "Color Next Picture" : "Next Picture") + '</button><button class="big-choice output-choice calm-button" type="button" id="buildMapBtn">Back To Map</button></div></div>';
   }
 
   function bindPromptButtons() {
@@ -176,8 +178,9 @@
       context.fillStyle = "#f7fbff";
       context.fillRect(0, 0, canvas.width, canvas.height);
       drawTraceDecor(context, canvas.width, canvas.height, template.color);
-      drawTemplateGuide(context, templateId, template.color);
-      drawPaintStrokes(context, templateId);
+      drawReferenceImage(context, templateId, mode, drawScene);
+      if (mode === "trace") drawTemplateGuide(context, templateId, template.color);
+      drawPaintStrokes(context, templateId, mode);
       if (mode === "trace") {
         drawGuideLines(context, template, progress);
         drawCompletedSegments(context, template, progress);
@@ -186,7 +189,6 @@
         drawTraceMessage(context, progress, template);
       } else {
         drawColoredOutline(context, template, template.color);
-        drawTraceMessage(context, progress, template, true);
       }
     }
 
@@ -258,17 +260,17 @@
 
   function drawTraceDecor(context, width, height, color) {
     context.save();
-    context.fillStyle = "rgba(77, 125, 224, 0.06)";
+    context.fillStyle = "rgba(77, 125, 224, 0.045)";
     context.beginPath();
-    context.arc(120, 92, 48, 0, Math.PI * 2);
+    context.arc(110, 86, 56, 0, Math.PI * 2);
     context.fill();
-    context.fillStyle = "rgba(255, 159, 67, 0.08)";
+    context.fillStyle = "rgba(255, 159, 67, 0.06)";
     context.beginPath();
-    context.arc(width - 88, 84, 56, 0, Math.PI * 2);
+    context.arc(width - 96, 92, 64, 0, Math.PI * 2);
     context.fill();
     context.fillStyle = color;
-    context.globalAlpha = 0.14;
-    context.fillRect(42, height - 68, width - 84, 22);
+    context.globalAlpha = 0.08;
+    context.fillRect(54, height - 58, width - 108, 16);
     context.restore();
   }
 
@@ -357,7 +359,7 @@
     context.restore();
   }
 
-  function drawPaintStrokes(context, templateId) {
+  function drawPaintStrokes(context, templateId, mode) {
     var strokes = app.state.build.paintStrokes[templateId] || [];
     var i;
     for (i = 0; i < strokes.length; i++) {
@@ -365,7 +367,7 @@
       if (!stroke.points.length) continue;
       context.save();
       context.strokeStyle = stroke.color;
-      context.lineWidth = 16;
+      context.lineWidth = mode === "color" ? 22 : 16;
       context.lineCap = "round";
       context.lineJoin = "round";
       context.beginPath();
@@ -410,11 +412,39 @@
   }
 
   function drawTraceMessage(context, progress, template, colorMode) {
+    if (colorMode) return;
     context.save();
     context.fillStyle = "#23405e";
     context.font = "700 20px Quicksand, sans-serif";
     context.textAlign = "left";
     context.fillText(colorMode ? "Pick a color and paint!" : "Start at number " + (progress + 1) + ".", 40, 40);
+    context.restore();
+  }
+
+  function drawReferenceImage(context, templateId, mode, redraw) {
+    var part = getPart(templateId);
+    if (!part || !part.asset) return;
+    var image = imageCache[part.asset];
+    if (!image) {
+      image = new Image();
+      imageCache[part.asset] = image;
+      image.onload = function() { redraw(); };
+      image.src = part.asset;
+      return;
+    }
+    if (!image.complete || !image.naturalWidth) return;
+    var canvas = context.canvas;
+    var fit = mode === "color" ? 0.7 : 0.48;
+    var width = image.naturalWidth;
+    var height = image.naturalHeight;
+    var scale = Math.min((canvas.width * fit) / width, (canvas.height * (mode === "color" ? 0.76 : 0.62)) / height);
+    var drawWidth = width * scale;
+    var drawHeight = height * scale;
+    var x = (canvas.width - drawWidth) / 2;
+    var y = mode === "color" ? (canvas.height - drawHeight) / 2 + 12 : (canvas.height - drawHeight) / 2 + 20;
+    context.save();
+    context.globalAlpha = mode === "color" ? 0.26 : 0.16;
+    context.drawImage(image, x, y, drawWidth, drawHeight);
     context.restore();
   }
 

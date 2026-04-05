@@ -41,16 +41,46 @@
     document.getElementById("game-overlay").style.display = "flex";
     if (app.dom.panelTitle) app.dom.panelTitle.textContent = "Pick Your Adventure";
     if (app.dom.panelSubtitle) app.dom.panelSubtitle.textContent = "Choose Lesson 1, Lesson 2, or jump into the games.";
-    var cards = app.data.lessonMenu.map(function(item) {
-      return '<button class="lesson-menu-card" type="button" data-menu-choice="' + item.id + '">' +
-        '<span class="lesson-menu-emoji">' + item.emoji + '</span>' +
-        '<strong>' + item.title + '</strong>' +
-        '<span>' + item.subtitle + '</span>' +
-        '</button>';
-    }).join("");
-    app.dom.gameArea.innerHTML = '<div class="welcome-card menu-card-screen"><div class="welcome-stack"><strong>🚀</strong><h3>Choose a lesson</h3><p class="hero-text">Lesson 1 is the island lesson. Lesson 2 is turning a computer on and off. Games are for free play.</p><div class="lesson-menu-grid">' + cards + '</div></div></div>';
-    bindMenuChoices();
-  }
+      var gamesCard = app.data.lessonMenu.filter(function(item) {
+        return item.id === "games";
+      }).map(function(item) {
+        return '<button class="lesson-menu-card lesson-menu-card-games" type="button" data-menu-choice="' + item.id + '">' +
+          '<span class="lesson-menu-emoji">' + item.emoji + '</span>' +
+          '<strong>' + item.title + '</strong>' +
+          '<span>' + item.subtitle + '</span>' +
+          '</button>';
+      }).join("");
+      var units = app.data.unitMenu.map(function(unit) {
+        var lessons = unit.lessons.map(function(lesson) {
+          if (lesson.active) {
+            return '<button class="course-lesson-card" type="button" data-menu-choice="' + lesson.id + '">' +
+              '<span class="course-lesson-badge">Lesson ' + lesson.number + '</span>' +
+              '<span class="course-lesson-icon">' + lesson.emoji + '</span>' +
+              '<strong>' + lesson.title + '</strong>' +
+              '<span>' + lesson.subtitle + '</span>' +
+              '</button>';
+          }
+          return '<div class="course-lesson-card is-locked" aria-disabled="true">' +
+            '<span class="course-lesson-badge">Lesson ' + lesson.number + '</span>' +
+            '<span class="course-lesson-icon course-lesson-silhouette">★</span>' +
+            '<strong>' + lesson.title + '</strong>' +
+            '<span>Coming Soon</span>' +
+            '</div>';
+        }).join("");
+        return '<section class="course-unit-card unit-' + unit.color + '">' +
+          '<div class="course-unit-header">' +
+          '<div class="course-unit-title-wrap">' +
+          '<span class="course-unit-icon">' + unit.emoji + '</span>' +
+          '<div><h4>' + unit.title + '</h4><p>' + unit.range + '</p></div>' +
+          '</div>' +
+          '<span class="course-unit-pill">' + unit.lessons.length + ' lessons</span>' +
+          '</div>' +
+          '<div class="course-lesson-grid">' + lessons + '</div>' +
+          '</section>';
+      }).join("");
+      app.dom.gameArea.innerHTML = '<div class="welcome-card menu-card-screen"><div class="menu-card-decor menu-card-decor-left" aria-hidden="true">🌴</div><div class="menu-card-decor menu-card-decor-right" aria-hidden="true">⭐</div><div class="menu-card-decor menu-card-decor-bottom" aria-hidden="true">🐬</div><div class="menu-card-wave" aria-hidden="true"></div><div class="welcome-stack menu-card-stack course-menu-stack"><strong>🚀</strong><h3>Choose a lesson</h3><p class="hero-text">Pick a unit, open a lesson, or jump into the games. More lessons are coming soon.</p><div class="lesson-menu-grid lesson-menu-grid-single">' + gamesCard + '</div><div class="course-unit-list">' + units + '</div></div></div>';
+      bindMenuChoices();
+    }
 
   function bindMenuChoices() {
     var buttons = app.dom.gameArea.querySelectorAll("[data-menu-choice]");

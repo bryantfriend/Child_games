@@ -49,3 +49,16 @@ Original prompt: Build this using HTML, CSS and vanilla js. Here is the concept:
 
 - 2026-04-05: Added a new startup flow before the emoji check-in: students now see a Start button, then the opening video from ssets/ICT_Video_Revision_for_nd_Graders.mp4, then after the video ends and a 2 second pause the app advances to the emoji selection screen.
 - 2026-04-05: Updated Playwright verification to cover the new start button and simulated video-end transition before the check-in flow continues.
+- 2026-04-05: Expanded Lesson 1 coloring mode so it hides the mission strip and completion heading while coloring, giving the canvas much more room on screen.
+- 2026-04-05: Centered the coloring reference art in the canvas using the real SVG device assets, removed the in-canvas "Pick a color and paint" text, and increased coloring stroke size for easier kid use.
+- 2026-04-05: Refreshed the device SVG art for the computer, mouse, keyboard, and monitor so the tracing/coloring stage feels more like a polished coloring book page.
+- 2026-04-05: Upgraded the Oxford logo SVG again and widened the badge sizing so the full wordmark fits more closely to the uploaded reference.
+- 2026-04-05: Re-ran Playwright verification and captured a focused Lesson 1 coloring screenshot to confirm the larger art mode layout renders correctly.
+- 2026-04-05: Reworked Lesson 2 so it now opens on its own lesson map, similar to Lesson 1, with 4 module cards and a locked Lesson 2 Fun Zone card.
+- 2026-04-05: Regrouped the old Lesson 2 flow into 4 modules: wake the computer, boot steps, power practice, and safe choices. Each finished module now awards 25 stars.
+- 2026-04-05: Added a Lesson 2 Fun Zone hub that unlocks after all 4 Lesson 2 modules are done and returns back to the Lesson 2 map after bonus games.
+- 2026-04-05: Updated core state and Playwright verification for the new Lesson 2 map flow. Verified the full path successfully, ending with all 4 Lesson 2 modules complete and the lesson Fun Zone unlocked.
+- 2026-04-05: Rebuilt Mouse Maze Escape so the mouse now snaps smoothly to the path instead of relying on harsh checkpoint distance checks, making the drag feel much easier for children to control.
+- 2026-04-05: Expanded Mouse Maze Escape into 10 levels from easy to hard, with Level 1 as a straight path and later levels adding more turns plus timed lasers that block the path and teach waiting.
+- 2026-04-05: Added visible Start and Cheese goal markers, level buttons, restart/next controls, and new maze visuals for the upgraded mouse game.
+- 2026-04-05: Verified the new maze visually with focused browser screenshots for Level 1 and Level 10, then reran the full Playwright verification successfully.

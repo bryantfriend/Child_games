@@ -158,6 +158,9 @@
         freePlay: app.state.freePlay,
         checkIn: app.state.checkIn,
         onoff: {
+          view: app.state.onoff.view || "map",
+          module: app.state.onoff.module || null,
+          moduleDone: app.state.onoff.moduleDone || {},
           mission: app.state.onoff.mission || 0,
           wakeHits: (app.state.onoff.wakeHits || []).slice(),
           stepOrder: (app.state.onoff.stepOrder || []).slice(),
@@ -205,6 +208,12 @@
         if (newState.completed.indexOf(gameId) === -1) {
           newState.completed.push(gameId);
           newState.stars += 25;
+        }
+        break;
+      case 'MARK_COMPLETE':
+        var markedId = rawAction.payload.id;
+        if (newState.completed.indexOf(markedId) === -1) {
+          newState.completed.push(markedId);
         }
         break;
       case 'SILLY_TAP':
@@ -259,6 +268,11 @@
       var btn = document.getElementById("backToMap");
       if (btn) btn.addEventListener("click", function() {
         clearFunTimers();
+        if (app.state.onoff && app.state.onoff.returnTo === "onoffMap" && app.lessons.onoff && app.lessons.onoff.showMap) {
+          app.state.onoff.returnTo = null;
+          app.lessons.onoff.showMap();
+          return;
+        }
         if (app.showLessonMap) app.showLessonMap();
         else app.checkin.renderWelcome();
       });

@@ -1,21 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 220" role="img" aria-labelledby="title desc">
   <title id="title">Mouse</title>
-  <desc id="desc">A friendly computer mouse with a curly cord.</desc>
+  <desc id="desc">A smiling computer mouse with colorful cord and buttons.</desc>
   <defs>
-    <linearGradient id="mouseBody" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#f8fbff"/>
-      <stop offset="100%" stop-color="#d7e7ff"/>
+    <linearGradient id="mouseShell" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#d9e8ff"/>
     </linearGradient>
   </defs>
-  <g transform="translate(26 16)">
-    <path d="M96 20c20 0 36 8 48 22 16 18 24 44 24 74 0 46-30 76-72 76S24 162 24 116c0-30 8-56 24-74C60 28 76 20 96 20z" fill="url(#mouseBody)"/>
-    <path d="M96 20v54" stroke="#6f96f7" stroke-width="8" stroke-linecap="round"/>
-    <path d="M96 74c-22 0-34-10-34-32" fill="none" stroke="#b7cdf8" stroke-width="6" stroke-linecap="round"/>
-    <path d="M96 74c22 0 34-10 34-32" fill="none" stroke="#b7cdf8" stroke-width="6" stroke-linecap="round"/>
-    <circle cx="84" cy="108" r="6" fill="#31507a"/>
-    <circle cx="108" cy="108" r="6" fill="#31507a"/>
-    <path d="M78 126q18 14 36 0" fill="none" stroke="#31507a" stroke-linecap="round" stroke-width="6"/>
-    <path d="M132 20c14-24 40-26 56-10 14 14 14 34-2 46" fill="none" stroke="#ffb347" stroke-width="10" stroke-linecap="round"/>
-    <circle cx="186" cy="60" r="10" fill="#ffb347"/>
+  <g transform="translate(18 10)">
+    <ellipse cx="104" cy="192" rx="82" ry="14" fill="#c6f1ff" opacity=".35"/>
+    <path d="M104 22c24 0 43 9 58 26 18 20 27 48 27 82 0 50-34 82-85 82S19 180 19 130c0-34 9-62 27-82 15-17 34-26 58-26z" fill="url(#mouseShell)"/>
+    <path d="M104 22v61" stroke="#7a97f3" stroke-width="8" stroke-linecap="round"/>
+    <path d="M104 83c-26 0-40-13-40-40" fill="none" stroke="#c3d2fb" stroke-width="7" stroke-linecap="round"/>
+    <path d="M104 83c26 0 40-13 40-40" fill="none" stroke="#c3d2fb" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="91" cy="117" r="6.5" fill="#30507d"/>
+    <circle cx="117" cy="117" r="6.5" fill="#30507d"/>
+    <path d="M84 137q20 15 40 0" fill="none" stroke="#30507d" stroke-linecap="round" stroke-width="6"/>
+    <path d="M140 28c18-28 49-31 67-12 17 18 15 42-3 56" fill="none" stroke="#ffb347" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="198" cy="67" r="11" fill="#ffb347"/>
+    <circle cx="158" cy="48" r="8" fill="#ff7fb2" opacity=".8"/>
   </g>
 </svg>

@@ -1,28 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 220" role="img" aria-labelledby="title desc">
   <title id="title">Computer</title>
-  <desc id="desc">A friendly desktop computer tower with lights and a smiling face.</desc>
+  <desc id="desc">A playful computer tower with a smiling face and shiny buttons.</desc>
   <defs>
-    <linearGradient id="towerBody" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#8bc5ff"/>
-      <stop offset="100%" stop-color="#4d7de0"/>
+    <linearGradient id="computerShell" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#85c8ff"/>
+      <stop offset="55%" stop-color="#5a8ef6"/>
+      <stop offset="100%" stop-color="#3d61c7"/>
     </linearGradient>
-    <linearGradient id="frontGlow" x1="0%" y1="0%" x2="1%" y2="100%">
-      <stop offset="0%" stop-color="#eef9ff"/>
-      <stop offset="100%" stop-color="#cfe9ff"/>
+    <linearGradient id="computerFront" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#d8edff"/>
+    </linearGradient>
+    <linearGradient id="computerScreenGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#99f3ff"/>
+      <stop offset="100%" stop-color="#60cfff"/>
     </linearGradient>
   </defs>
-  <g transform="translate(32 18)">
-    <ellipse cx="88" cy="184" rx="74" ry="14" fill="#9bdfff" opacity=".35"/>
-    <rect x="26" y="8" width="124" height="166" rx="28" fill="url(#towerBody)"/>
-    <rect x="42" y="22" width="92" height="136" rx="22" fill="url(#frontGlow)"/>
-    <rect x="56" y="38" width="64" height="34" rx="14" fill="#91ebff"/>
-    <circle cx="78" cy="98" r="7" fill="#31507a"/>
-    <circle cx="100" cy="98" r="7" fill="#31507a"/>
-    <path d="M74 116q15 13 30 0" fill="none" stroke="#31507a" stroke-linecap="round" stroke-width="6"/>
-    <circle cx="86" cy="134" r="7" fill="#ffcf5c"/>
-    <rect x="74" y="146" width="26" height="9" rx="4.5" fill="#7aa3ef"/>
-    <circle cx="146" cy="52" r="20" fill="#fff3a6" opacity=".55"/>
-    <path d="M150 24c16 10 23 21 24 36" fill="none" stroke="#7fe38a" stroke-linecap="round" stroke-width="8"/>
-    <circle cx="168" cy="62" r="10" fill="#7fe38a"/>
+  <g transform="translate(26 12)">
+    <ellipse cx="94" cy="191" rx="78" ry="15" fill="#a8ebff" opacity=".35"/>
+    <path d="M34 22c0-13 11-24 24-24h78c33 0 60 27 60 60v94c0 18-14 32-32 32H58c-13 0-24-11-24-24V22z" fill="url(#computerShell)"/>
+    <path d="M48 34c0-12 10-22 22-22h60c29 0 52 23 52 52v78c0 15-12 28-28 28H70c-12 0-22-10-22-22V34z" fill="url(#computerFront)"/>
+    <rect x="70" y="28" width="72" height="40" rx="15" fill="url(#computerScreenGlow)"/>
+    <path d="M82 39c12-10 33-10 46 2-11 4-31 7-46-2z" fill="#ffffff" opacity=".35"/>
+    <circle cx="88" cy="100" r="7.5" fill="#30507d"/>
+    <circle cx="112" cy="100" r="7.5" fill="#30507d"/>
+    <path d="M82 120q18 17 36 0" fill="none" stroke="#30507d" stroke-linecap="round" stroke-width="7"/>
+    <rect x="76" y="138" width="50" height="10" rx="5" fill="#8fb7ff"/>
+    <circle cx="88" cy="158" r="8" fill="#ffd251"/>
+    <circle cx="112" cy="158" r="8" fill="#ff7fb2"/>
+    <circle cx="136" cy="158" r="8" fill="#73df95"/>
+    <circle cx="164" cy="38" r="22" fill="#fff0a9" opacity=".55"/>
+    <path d="M167 12c15 10 22 23 22 39" fill="none" stroke="#7be088" stroke-linecap="round" stroke-width="8"/>
+    <circle cx="183" cy="51" r="10" fill="#7be088"/>
   </g>
 </svg>
