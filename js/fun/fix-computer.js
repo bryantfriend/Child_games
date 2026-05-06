@@ -3,10 +3,16 @@
   var h = app.helpers;
 
   var bootStages = [
-    { label: "Wake up!", text: "Tap when the dot is in the green zone.", zoneStart: 62, zoneEnd: 80 },
-    { label: "Loading drivers...", text: "Wait... now tap in the green.", zoneStart: 18, zoneEnd: 35 },
-    { label: "Starting system...", text: "One more good tap.", zoneStart: 56, zoneEnd: 72 },
-    { label: "Opening desktop...", text: "Final tap for GO!", zoneStart: 28, zoneEnd: 46 },
+    { label: "Check Power", text: "Tap when the dot is in the green zone.", zoneStart: 62, zoneEnd: 80, speed: 2.0 },
+    { label: "Hardware test...", text: "Wait for the green. Don't rush!", zoneStart: 18, zoneEnd: 35, speed: 2.5 },
+    { label: "Loading drivers...", text: "Watch out for the red zone!", zoneStart: 70, zoneEnd: 85, badZone: { start: 50, end: 65 }, speed: 2.8 },
+    { label: "Checking memory...", text: "A bit faster now...", zoneStart: 20, zoneEnd: 35, speed: 3.4 },
+    { label: "Mounting disks...", text: "Wait... now tap!", zoneStart: 45, zoneEnd: 60, speed: 4.0 },
+    { label: "Starting system...", text: "Very fast! Good luck.", zoneStart: 75, zoneEnd: 88, speed: 4.8 },
+    { label: "Loading OS...", text: "Avoid the bug sector!", zoneStart: 15, zoneEnd: 30, badZone: { start: 35, end: 60 }, speed: 3.5 },
+    { label: "Securing network...", text: "Tricky timing...", zoneStart: 50, zoneEnd: 62, badZone: { start: 65, end: 85 }, speed: 4.2 },
+    { label: "Opening desktop...", text: "Almost there...", zoneStart: 80, zoneEnd: 92, speed: 5.5 },
+    { label: "Final Checks...", text: "Final tap for GO!", zoneStart: 10, zoneEnd: 22, badZone: { start: 30, end: 80 }, speed: 4.5 }
   ];
 
   function start() {
@@ -27,7 +33,9 @@
 
   function tick() {
     if (app.state.fun.mode !== "fix" || app.state.fun.bootCelebration) return;
-    app.state.fun.bootCursor += app.state.fun.bootDirection * 2.3;
+    var stage = bootStages[Math.min(app.state.fun.bootStage, bootStages.length - 1)];
+    var speed = stage.speed || 2.3;
+    app.state.fun.bootCursor += app.state.fun.bootDirection * speed;
     if (app.state.fun.bootCursor >= 100 || app.state.fun.bootCursor <= 0) {
       app.state.fun.bootDirection *= -1;
       if (app.state.fun.bootCursor > 100) app.state.fun.bootCursor = 100;
@@ -44,10 +52,10 @@
 
     if (app.state.fun.bootCelebration) {
       app.dom.gameArea.innerHTML = '<div class="game-card">' + h.getCardHeader('<span class="pill">Boot complete</span><span class="pill">Computer ready</span>', "backToFun", "⬅ Fun Zone") + h.getMissionStrip("Boot-Up Sequence", "You started the computer!", [{ label: "Boot complete", done: true }]) +
-        '<div class="arcade-board boot-board">' +
-          '<div class="boot-screen boot-celebration-screen">' +
+        '<div class="arcade-board boot-board" style="padding-top: 10px;">' +
+          '<div class="boot-screen boot-celebration-screen" style="padding: 10px;">' +
             '<div class="boot-celebration-art">' +
-              '<svg viewBox="0 0 420 260" class="fun-svg" aria-hidden="true">' +
+              '<svg viewBox="0 0 420 260" style="max-height: 120px;" class="fun-svg" aria-hidden="true">' +
                 '<defs><linearGradient id="bootGlow" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9af6ff"/><stop offset="100%" stop-color="#5cd6ff"/></linearGradient></defs>' +
                 '<circle cx="210" cy="128" r="92" fill="rgba(255,255,255,0.14)"/>' +
                 '<circle cx="210" cy="128" r="66" fill="rgba(255,216,79,0.18)" class="boot-celebration-pulse"/>' +
@@ -65,10 +73,9 @@
             '</div>' +
             '<div class="boot-copy">' +
               '<div class="boot-title">Computer ready!</div>' +
-              '<div class="boot-subtitle">Great job. The boot-up is finished and the screen is glowing.</div>' +
+              '<div class="boot-subtitle">Great job. The boot-up is finished.</div>' +
             '</div>' +
-            '<div class="boot-error-box boot-celebration-box">Beep beep! Click the button when you want to go back.</div>' +
-            '<button class="big-choice calm-button boot-button" type="button" id="bootCelebrateBtn">Back To Fun Zone</button>' +
+            '<button class="big-choice calm-button boot-button" style="margin-top: 10px;" type="button" id="bootCelebrateBtn">Back To Fun Zone</button>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -76,12 +83,17 @@
       return;
     }
     
+    var badHtml = "";
+    if (stage.badZone) {
+      badHtml = '<div class="boot-zone" style="background: rgba(255, 60, 60, 0.6); left:' + stage.badZone.start + '%;width:' + (stage.badZone.end - stage.badZone.start) + '%;"></div>';
+    }
+
     app.dom.gameArea.innerHTML = '<div class="game-card">' + h.getCardHeader('<span class="pill">Stage ' + Math.min(app.state.fun.bootStage + 1, bootStages.length) + ' / ' + bootStages.length + '</span><span class="pill">Oops ' + app.state.fun.bootErrors + '</span>', "backToFun", "⬅ Fun Zone") + h.getMissionStrip("Boot-Up Sequence", completed ? "The computer is ready!" : stage.text, [{ label: "Tap in the green zone", done: completed }, { label: "Start the computer", done: progress >= 100 }]) +
       '<div class="arcade-board boot-board">' +
         '<div class="boot-screen ' + (app.state.fun.bootWinFlash ? "boot-screen-win" : "") + '">' +
           '<div class="boot-screen-top">' +
             '<div class="boot-computer-art">' +
-              '<svg viewBox="0 0 220 180" class="fun-svg" aria-hidden="true">' +
+              '<svg viewBox="0 0 220 180" style="max-height: 100px;" class="fun-svg" aria-hidden="true">' +
                 '<rect x="36" y="18" width="148" height="102" rx="20" fill="#2f5aa8"/>' +
                 '<rect x="48" y="30" width="124" height="78" rx="14" fill="#8be6ff"/>' +
                 '<circle cx="84" cy="68" r="10" fill="#fff3b0"/>' +
@@ -98,12 +110,13 @@
           '</div>' +
           '<div class="boot-meter">' +
             '<div class="boot-zone" style="left:' + stage.zoneStart + '%;width:' + (stage.zoneEnd - stage.zoneStart) + '%;"></div>' +
+            badHtml +
             '<div class="boot-dot" id="bootDot" style="left:' + app.state.fun.bootCursor + '%;"></div>' +
           '</div>' +
           '<div class="boot-progress">' +
             '<div class="boot-progress-fill" style="width:' + progress + '%;"></div>' +
           '</div>' +
-          '<button class="big-choice calm-button boot-button" type="button" id="bootTapBtn">TAP TO BOOT</button>' +
+          '<button class="big-choice calm-button boot-button" style="margin-top:5px;" type="button" id="bootTapBtn">TAP TO BOOT</button>' +
           '<div class="boot-error-box" id="bootErrorBox">' + (app.state.fun.bootLastError || "Ready to start!") + '</div>' +
         '</div>' +
       '</div>' +
@@ -126,6 +139,22 @@
   function pressBoot() {
     var stage = bootStages[Math.min(app.state.fun.bootStage, bootStages.length - 1)];
     var hit = app.state.fun.bootCursor >= stage.zoneStart && app.state.fun.bootCursor <= stage.zoneEnd;
+    var badHit = stage.badZone && app.state.fun.bootCursor >= stage.badZone.start && app.state.fun.bootCursor <= stage.badZone.end;
+
+    if (badHit) {
+      app.state.fun.bootErrors += 2;
+      app.state.fun.bootLastError = "Yikes! Bad sector penalty!";
+      h.showFeedback("Yikes! Bad sector!", "error");
+      var boxBad = document.getElementById("bootErrorBox");
+      if (boxBad) {
+        boxBad.classList.remove("boot-error-shake");
+        void boxBad.offsetWidth;
+        boxBad.classList.add("boot-error-shake");
+        boxBad.textContent = app.state.fun.bootLastError;
+      }
+      return;
+    }
+
     if (hit) {
       app.state.fun.bootStage += 1;
       app.state.fun.bootCursor = 0;

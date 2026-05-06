@@ -3,9 +3,11 @@
   var challengeRounds = app.data.challengeRounds;
   var challengeTargets = app.data.challengeTargets;
   var h = app.helpers;
+  var speakTimer = null;
 
   function start() {
-    app.state.challenge = { round: 0, lives: 3, streak: 0, best: 0, mission: 1 };
+    app.state.challenge = { round: 0, lives: 3, streak: 0, best: 0, mission: 1, lastSpokenRound: -1 };
+    stopSpeech();
     render();
   }
 
@@ -14,12 +16,14 @@
     var round = challengeRounds[challenge.round];
     
     if (challenge.lives <= 0) {
+      stopSpeech();
       app.dom.gameArea.innerHTML = '<div class="win-panel"><h3>Try again!</h3><p>You ran out of lives. Let\'s go back to the map.</p><button class="back-button" type="button" id="backToMap">⬅ Map</button></div>';
       h.bindBackToMap();
       return;
     }
 
     if (challenge.round >= challengeRounds.length) {
+      stopSpeech();
       app.dom.gameArea.innerHTML = '<div class="win-panel"><h3>Challenge Island complete!</h3><p>You are a teacher\'s says pro!</p></div>';
       h.bindBackToMap();
       return;
@@ -40,6 +44,8 @@
          btn.addEventListener("click", function() { handleChoice(btn.dataset.challengeChoice, btn); });
        })(choiceBtns[i]);
     }
+
+    speakRound(round);
   }
 
   function handleChoice(id, button) {
@@ -59,6 +65,7 @@
       h.showFeedback("YES!", "success");
       h.spawnConfetti(5, false);
       app.state.challenge.round += 1;
+      app.state.challenge.lastSpokenRound = -1;
       if (app.state.challenge.round >= challengeRounds.length) {
          app.processAction('COMPLETE_GAME', { id: "challenge" });
       }
@@ -66,12 +73,81 @@
       app.state.challenge.lives -= 1;
       app.state.challenge.streak = 0;
       h.showFeedback("Wrong! Wait or look closer.", "error");
+      speakText(getCorrectionLine(round));
       if (button) {
         button.classList.add("shake");
         setTimeout(function() { button.classList.remove("shake"); }, 500);
       }
     }
     render();
+  }
+
+  function speakRound(round) {
+    if (!round) return;
+    if (app.state.challenge.lastSpokenRound === app.state.challenge.round) return;
+    app.state.challenge.lastSpokenRound = app.state.challenge.round;
+    speakText(round.prompt);
+  }
+
+  function getCorrectionLine(round) {
+    if (!round) return "Try again.";
+    if (round.says) {
+      return "Close. Teacher says, " + cleanPrompt(round.prompt);
+    }
+    return "Oops, teacher did not say. Remember to tap wait if the teacher did not say.";
+  }
+
+  function cleanPrompt(text) {
+    return String(text || "").replace(/^Teacher says\s*/i, "").replace(/\!+$/, "").trim() + ".";
+  }
+
+  function pickVoice() {
+    var synth = window.speechSynthesis;
+    if (!synth || !synth.getVoices) return null;
+    var voices = synth.getVoices();
+    if (!voices || !voices.length) return null;
+    var best = null;
+    var i;
+    for (i = 0; i < voices.length; i++) {
+      if (/en/i.test(voices[i].lang) && /female|samantha|zira|aria|google us english/i.test((voices[i].name || "").toLowerCase())) {
+        best = voices[i];
+        break;
+      }
+    }
+    if (!best) {
+      for (i = 0; i < voices.length; i++) {
+        if (/en/i.test(voices[i].lang)) {
+          best = voices[i];
+          break;
+        }
+      }
+    }
+    return best || voices[0];
+  }
+
+  function stopSpeech() {
+    if (speakTimer) {
+      clearTimeout(speakTimer);
+      speakTimer = null;
+    }
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+  }
+
+  function speakText(text) {
+    stopSpeech();
+    if (!("speechSynthesis" in window) || !window.SpeechSynthesisUtterance) return;
+    speakTimer = setTimeout(function() {
+      var utterance = new window.SpeechSynthesisUtterance(text);
+      var voice = pickVoice();
+      utterance.voice = voice;
+      utterance.rate = 0.92;
+      utterance.pitch = 1.18;
+      utterance.volume = 1;
+      window.speechSynthesis.speak(utterance);
+      speakTimer = null;
+    }, 150);
   }
 
   app.lessons.challenge = { start: start, render: render };

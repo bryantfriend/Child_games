@@ -2,7 +2,7 @@
   var app = window.ICTApp = window.ICTApp || {};
 
   function bindDragSystem() {
-    var items = app.dom.gameArea.querySelectorAll(".draggable-item");
+    var items = app.dom.gameArea.querySelectorAll(".draggable-item, .cable-card, [data-kind][data-id]");
     var i;
     for (i = 0; i < items.length; i++) {
       items[i].addEventListener("pointerdown", startDrag);
@@ -12,6 +12,7 @@
   function startDrag(event) {
     var source = event.currentTarget;
     if (source.classList.contains("placed")) return;
+    if (!source.dataset || !source.dataset.kind || !source.dataset.id) return;
     var ghost = source.cloneNode(true);
     ghost.classList.add("drag-ghost");
     document.body.appendChild(ghost);

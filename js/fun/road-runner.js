@@ -1,6 +1,7 @@
 (function () {
   var app = window.ICTApp;
   var h = app.helpers;
+  var colCenters = [10, 30, 50, 70, 90];
   var lanes = [
     { y: 0, speed: 0 },
     { y: 1, speed: 0.8, obstacles: ["keyboard", "keyboard", "mouse"] },
@@ -28,6 +29,7 @@
 
   function start() {
     h.clearFunTimers();
+    detachPhysicalKeyboard();
     app.state.fun = {
       mode: "road",
       timers: [],
@@ -61,7 +63,7 @@
         items.push({
           lane: laneIndex,
           type: lane.obstacles[j],
-          x: (j * 1.75) + (lane.speed > 0 ? -0.4 : 0.9),
+          x: (j * 30) + (lane.speed > 0 ? -8 : 108),
           speed: lane.speed
         });
       }
@@ -71,14 +73,13 @@
 
   function render() {
     var state = app.state.fun.road;
-    var top = h.getCardHeader('<span class="pill">Fun Zone bonus</span><span class="pill">Cross the tech road</span>');
+    var top = h.getCardHeader('<span class="pill">Fun Zone bonus</span><span class="pill">Cross the tech road</span>', "backToFun", "⬅ Fun Zone");
     var mission = h.getMissionStrip("Techy Road", "Pick a hero, tap arrows, and dodge computer traffic.", [
       { label: "Choose a hero", done: Boolean(state.selected) },
       { label: "Reach the top", done: state.win },
       { label: "Keep your 3 hearts", done: state.lives === 3 && state.phase !== "pick" }
     ]);
     app.dom.gameArea.innerHTML = '<div class="game-card">' + top + mission + renderBody(state) + '</div>';
-    h.bindBackToMap();
     bindEvents();
   }
 
@@ -128,12 +129,12 @@
   function renderLaneObstacles(row, obstacles) {
     var laneItems = obstacles.filter(function(obstacle) { return obstacle.lane === row; });
     return laneItems.map(function(obstacle) {
-      return '<div class="road-obstacle road-obstacle-' + obstacle.type + '" style="left:' + (obstacle.x * 20) + '%">' + renderObstacle(obstacle.type) + '</div>';
+      return '<div class="road-obstacle road-obstacle-' + obstacle.type + '" style="left:' + obstacle.x + '%">' + renderObstacle(obstacle.type) + '</div>';
     }).join("");
   }
 
   function renderPlayer(character, col) {
-    return '<div class="road-player" style="left:calc(' + (col * 25) + '% + 18px)">' + renderCharacterAvatar(character, "road-player-avatar") + '</div>';
+    return '<div class="road-player" style="left:' + colCenters[col] + '%">' + renderCharacterAvatar(character, "road-player-avatar") + '</div>';
   }
 
   function renderWin() {
@@ -164,15 +165,29 @@
       });
     });
     bindMany("[data-road-move]", function (button) {
-      button.addEventListener("click", function () {
+      button.addEventListener("pointerdown", function (event) {
+        event.preventDefault();
         movePlayer(button.dataset.roadMove);
       });
     });
     var again = document.getElementById("roadPlayAgainBtn");
     if (again) again.addEventListener("click", start);
     var hub = document.getElementById("roadHubBtn");
-    if (hub) hub.addEventListener("click", function () { app.funGames.hub.start(); });
-    document.onkeydown = function (event) {
+    if (hub) hub.addEventListener("click", function () { 
+      detachPhysicalKeyboard();
+      app.funGames.hub.start(); 
+    });
+    var backBtn = document.getElementById("backToFun");
+    if (backBtn) backBtn.addEventListener("click", function() {
+      detachPhysicalKeyboard();
+      app.funGames.hub.start();
+    });
+    attachPhysicalKeyboard();
+  }
+
+  function attachPhysicalKeyboard() {
+    if (app.state.fun && app.state.fun.roadKeyHandler) return;
+    app.state.fun.roadKeyHandler = function (event) {
       if (app.state.fun.mode !== "road" || app.state.fun.road.phase !== "play") return;
       var keyMap = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right" };
       if (keyMap[event.key]) {
@@ -180,6 +195,13 @@
         movePlayer(keyMap[event.key]);
       }
     };
+    window.addEventListener("keydown", app.state.fun.roadKeyHandler);
+  }
+
+  function detachPhysicalKeyboard() {
+    if (!app.state.fun || !app.state.fun.roadKeyHandler) return;
+    window.removeEventListener("keydown", app.state.fun.roadKeyHandler);
+    app.state.fun.roadKeyHandler = null;
   }
 
   function bindMany(selector, binder) {
@@ -200,7 +222,7 @@
 
   function startLoop() {
     h.clearFunTimers();
-    h.addFunTimer(setInterval(stepGame, 140), "interval");
+    h.addFunTimer(setInterval(stepGame, 80), "interval");
   }
 
   function stepGame() {
@@ -210,9 +232,9 @@
     var i;
     for (i = 0; i < state.obstacles.length; i++) {
       var obstacle = state.obstacles[i];
-      obstacle.x += obstacle.speed * 0.08;
-      if (obstacle.speed > 0 && obstacle.x > 5.3) obstacle.x = -0.9;
-      if (obstacle.speed < 0 && obstacle.x < -1.3) obstacle.x = 5.2;
+      obstacle.x += obstacle.speed * 1.1;
+      if (obstacle.speed > 0 && obstacle.x > 110) obstacle.x = -10;
+      if (obstacle.speed < 0 && obstacle.x < -10) obstacle.x = 110;
     }
     if (checkHit()) {
       state.lives -= 1;
@@ -235,11 +257,12 @@
     if (direction === "up") state.row = Math.max(0, state.row - 1);
     if (direction === "down") state.row = Math.min(6, state.row + 1);
     if (direction === "left") state.col = Math.max(0, state.col - 1);
-    if (direction === "right") state.col = Math.min(3, state.col + 1);
+    if (direction === "right") state.col = Math.min(colCenters.length - 1, state.col + 1);
     if (state.row === 0) {
       state.phase = "win";
       state.win = true;
       state.coins += 5;
+      app.processAction('BUMP_STARS', { amount: 5 });
       h.clearFunTimers();
       h.spawnConfetti(36, true);
       h.showFeedback("You made it!", "success");
@@ -252,14 +275,14 @@
 
   function checkHit() {
     var state = app.state.fun.road;
-    var playerX = 0.1 + (state.col * 0.25);
+    var playerX = colCenters[state.col];
     var playerLane = state.row;
+    var playerHalfWidth = 4.5;
     var i;
     for (i = 0; i < state.obstacles.length; i++) {
       var obstacle = state.obstacles[i];
       if (obstacle.lane !== playerLane) continue;
-      var dx = Math.abs((obstacle.x / 5) - playerX);
-      if (dx < 0.12) return true;
+      if (Math.abs(obstacle.x - playerX) < playerHalfWidth) return true;
     }
     return false;
   }

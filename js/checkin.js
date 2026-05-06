@@ -75,7 +75,7 @@
     }
 
     if (app.state.checkIn.path === "video") {
-       app.dom.gameArea.innerHTML = '<div class="welcome-card intro-screen"><div class="intro-panel intro-video-panel"><div class="welcome-stack intro-stack"><div class="intro-badge">Oxford ICT Adventure</div><h3>Watch and get ready</h3><p class="hero-text">The game will start after the video.</p><div class="intro-video-shell"><video id="introVideo" class="intro-video" playsinline preload="auto" muted><source src="assets/ICT_Video_Revision_for_nd_Graders.mp4" type="video/mp4"></video></div></div></div></div>';
+       app.dom.gameArea.innerHTML = '<div class="welcome-card intro-screen"><div class="intro-panel intro-video-panel"><button class="back-button intro-skip-button" type="button" id="introSkipBtn">Skip</button><div class="welcome-stack intro-stack"><div class="intro-badge">Oxford ICT Adventure</div><h3>Watch and get ready</h3><p class="hero-text">The game will start after the video.</p><div class="intro-video-shell"><video id="introVideo" class="intro-video" playsinline preload="auto" muted><source src="assets/ICT_Video_Revision_for_nd_Graders.mp4" type="video/mp4"></video></div></div></div></div>';
        bindIntroVideo();
        return;
     }
@@ -135,17 +135,27 @@
 
   function bindIntroVideo() {
     var video = document.getElementById("introVideo");
+    var skipBtn = document.getElementById("introSkipBtn");
     if (!video) return;
+    var moveToPick = function() {
+      if (introDelay) {
+        clearTimeout(introDelay);
+        introDelay = null;
+      }
+      video.pause();
+      app.processAction('UPDATE_CHECKIN', { path: "pick" });
+      renderWelcome();
+    };
     video.muted = true;
     video.volume = 0;
     var goNext = function() {
       if (introDelay) clearTimeout(introDelay);
       introDelay = setTimeout(function() {
-        app.processAction('UPDATE_CHECKIN', { path: "pick" });
-        renderWelcome();
+        moveToPick();
       }, 2000);
     };
     video.addEventListener("ended", goNext, { once: true });
+    if (skipBtn) skipBtn.addEventListener("click", moveToPick);
     var playPromise = video.play();
     if (playPromise && playPromise.catch) {
       playPromise.catch(function() {

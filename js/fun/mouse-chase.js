@@ -1,26 +1,25 @@
 (function () {
   var app = window.ICTApp;
   var h = app.helpers;
+  var CELL = 8;
+  var CORRIDOR = 8.8;
+  var MOUSE_RADIUS = 2.1;
 
   var mazeLevels = [
-    level("Level 1", "Easy", [{ x: 12, y: 50 }, { x: 86, y: 50 }], []),
-    level("Level 2", "Easy", [{ x: 12, y: 66 }, { x: 38, y: 66 }, { x: 38, y: 40 }, { x: 86, y: 40 }], []),
-    level("Level 3", "Easy", [{ x: 12, y: 76 }, { x: 28, y: 76 }, { x: 28, y: 56 }, { x: 52, y: 56 }, { x: 52, y: 30 }, { x: 86, y: 30 }], []),
-    level("Level 4", "Medium", [{ x: 12, y: 82 }, { x: 24, y: 82 }, { x: 24, y: 62 }, { x: 46, y: 62 }, { x: 46, y: 42 }, { x: 70, y: 42 }, { x: 70, y: 22 }, { x: 86, y: 22 }], []),
-    level("Level 5", "Medium", [{ x: 12, y: 80 }, { x: 22, y: 80 }, { x: 22, y: 56 }, { x: 58, y: 56 }, { x: 58, y: 72 }, { x: 76, y: 72 }, { x: 76, y: 24 }, { x: 86, y: 24 }], []),
-    level("Level 6", "Medium", [{ x: 12, y: 84 }, { x: 28, y: 84 }, { x: 28, y: 64 }, { x: 44, y: 64 }, { x: 44, y: 30 }, { x: 60, y: 30 }, { x: 60, y: 52 }, { x: 84, y: 52 }, { x: 84, y: 16 }], [laser(4, 0.9, 1.9)]),
-    level("Level 7", "Tricky", [{ x: 12, y: 84 }, { x: 22, y: 84 }, { x: 22, y: 44 }, { x: 42, y: 44 }, { x: 42, y: 70 }, { x: 62, y: 70 }, { x: 62, y: 26 }, { x: 86, y: 26 }], [laser(2, 0.8, 2.2)]),
-    level("Level 8", "Tricky", [{ x: 12, y: 84 }, { x: 30, y: 84 }, { x: 30, y: 60 }, { x: 54, y: 60 }, { x: 54, y: 38 }, { x: 36, y: 38 }, { x: 36, y: 18 }, { x: 84, y: 18 }], [laser(4, 0.75, 2)]),
-    level("Level 9", "Hard", [{ x: 12, y: 88 }, { x: 22, y: 88 }, { x: 22, y: 56 }, { x: 42, y: 56 }, { x: 42, y: 78 }, { x: 62, y: 78 }, { x: 62, y: 34 }, { x: 78, y: 34 }, { x: 78, y: 18 }, { x: 88, y: 18 }], [laser(2, 0.8, 2.3), laser(6, 0.7, 2.1)]),
-    level("Level 10", "Hard", [{ x: 12, y: 88 }, { x: 22, y: 88 }, { x: 22, y: 64 }, { x: 40, y: 64 }, { x: 40, y: 84 }, { x: 62, y: 84 }, { x: 62, y: 46 }, { x: 48, y: 46 }, { x: 48, y: 22 }, { x: 74, y: 22 }, { x: 74, y: 58 }, { x: 88, y: 58 }, { x: 88, y: 14 }], [laser(2, 0.7, 2.4), laser(6, 0.75, 2.1), laser(9, 0.7, 2.6)])
+    mazeLevel("Level 1", "Easy", [[1, 6], [3, 6], [5, 6], [7, 6], [9, 6]], []),
+    mazeLevel("Level 2", "Easy", [[1, 8], [3, 8], [5, 8], [5, 6], [5, 4], [7, 4], [9, 4]], []),
+    mazeLevel("Level 3", "Easy", [[1, 9], [3, 9], [3, 7], [3, 5], [5, 5], [7, 5], [7, 3], [9, 3]], []),
+    mazeLevel("Level 4", "Medium", [[1, 10], [3, 10], [5, 10], [5, 8], [5, 6], [7, 6], [9, 6], [9, 4], [9, 2]], []),
+    mazeLevel("Level 5", "Medium", [[1, 10], [1, 8], [1, 6], [3, 6], [5, 6], [5, 8], [7, 8], [9, 8], [9, 6], [9, 4], [9, 2]], []),
+    mazeLevel("Level 6", "Medium", [[1, 10], [3, 10], [3, 8], [3, 6], [5, 6], [7, 6], [7, 4], [7, 2], [9, 2]], [{ segment: 5, from: 0.18, to: 0.82, on: 1.2, cycle: 2.2 }]),
+    mazeLevel("Level 7", "Tricky", [[1, 10], [1, 8], [1, 6], [3, 6], [5, 6], [5, 8], [5, 10], [7, 10], [7, 8], [7, 6], [9, 6], [9, 4], [9, 2]], [{ segment: 8, from: 0.15, to: 0.85, on: 1.1, cycle: 2.3 }]),
+    mazeLevel("Level 8", "Tricky", [[1, 10], [3, 10], [5, 10], [5, 8], [5, 6], [3, 6], [3, 4], [3, 2], [5, 2], [7, 2], [9, 2]], [{ segment: 3, from: 0.2, to: 0.8, on: 1.25, cycle: 2.4 }]),
+    mazeLevel("Level 9", "Hard", [[1, 10], [1, 8], [3, 8], [5, 8], [5, 10], [7, 10], [7, 8], [7, 6], [5, 6], [3, 6], [3, 4], [5, 4], [7, 4], [9, 4], [9, 2]], [{ segment: 2, from: 0.22, to: 0.78, on: 1.1, cycle: 2.1 }, { segment: 11, from: 0.2, to: 0.82, on: 1, cycle: 2.35 }]),
+    mazeLevel("Level 10", "Hard", [[1, 10], [3, 10], [3, 8], [3, 6], [5, 6], [7, 6], [7, 8], [7, 10], [9, 10], [9, 8], [9, 6], [9, 4], [7, 4], [5, 4], [5, 2], [7, 2], [9, 2]], [{ segment: 3, from: 0.18, to: 0.82, on: 1.05, cycle: 2.25 }, { segment: 8, from: 0.18, to: 0.82, on: 1.15, cycle: 2.4 }, { segment: 13, from: 0.18, to: 0.82, on: 1.05, cycle: 2.2 }])
   ];
 
-  function level(name, tag, points, lasers) {
-    return { name: name, tag: tag, points: points, lasers: lasers || [] };
-  }
-
-  function laser(segmentIndex, onSeconds, cycleSeconds) {
-    return { segmentIndex: segmentIndex, onSeconds: onSeconds, cycleSeconds: cycleSeconds };
+  function mazeLevel(name, tag, cells, lasers) {
+    return { name: name, tag: tag, cells: cells, lasers: lasers || [] };
   }
 
   function start() {
@@ -31,61 +30,61 @@
       mazeLevel: 0,
       mazeHighest: 0,
       mazeDragging: false,
-      mazeAlong: 0,
       mazePointerId: null,
-      mazePoint: { x: 0, y: 0 },
       mazeProgress: 0,
+      mazePoint: null,
       mazeComplete: false,
-      mazeMessage: "Drag slowly on the path.",
-      mazeStartStamp: Date.now()
+      mazeMessage: "Drag the mouse through the maze.",
+      mazeClockStart: Date.now(),
+      mazeLastSafe: null
     });
     resetLevel(false);
-    startLaserClock();
+    h.addFunTimer(setInterval(updateLasers, 160), "interval");
     render();
   }
 
   function render() {
-    var levelData = getLevel();
-    var progress = Math.round(app.state.fun.mazeProgress * 100);
-    var activeLasers = getActiveLaserIndexes();
-    var checkpoints = levelData.points.map(function(point, index) {
-      var active = index / (levelData.points.length - 1) <= app.state.fun.mazeProgress ? "maze-checkpoint-on" : "";
-      return '<circle class="maze-checkpoint ' + active + '" cx="' + point.x + '" cy="' + point.y + '" r="' + (index === 0 || index === levelData.points.length - 1 ? 4.8 : 3.5) + '" />';
+    var levelData = currentLevel();
+    var pathPoints = buildPathPoints(levelData.cells);
+    var activeLasers = getActiveLasers();
+    var levelDots = mazeLevels.map(function (_, index) {
+      var cls = [];
+      if (index <= app.state.fun.mazeHighest) cls.push("maze-level-dot-open");
+      if (index === app.state.fun.mazeLevel) cls.push("maze-level-dot-on");
+      return '<button class="maze-level-dot ' + cls.join(" ") + '" type="button" data-maze-level="' + index + '">' + (index + 1) + '</button>';
     }).join("");
-    var laserHtml = levelData.lasers.map(function(item, index) {
-      var segment = getSegment(levelData.points, item.segmentIndex);
+
+    var corridorPath = svgPath(pathPoints);
+    var laserHtml = levelData.lasers.map(function (laser, index) {
+      var rect = laserRect(levelData, laser);
       var isOn = activeLasers.indexOf(index) !== -1;
-      var x = (segment.a.x + segment.b.x) / 2;
-      var y = (segment.a.y + segment.b.y) / 2;
-      var angle = Math.atan2(segment.b.y - segment.a.y, segment.b.x - segment.a.x) * 180 / Math.PI;
-      var length = distance(segment.a, segment.b) * 0.84;
-      return '<div class="maze-laser-wrap" style="left:' + x + '%;top:' + y + '%;width:' + length + '%;transform: translate(-50%, -50%) rotate(' + angle + 'deg);"><div class="maze-laser ' + (isOn ? "maze-laser-on" : "maze-laser-off") + '"></div><div class="maze-laser-tip maze-laser-tip-left"></div><div class="maze-laser-tip maze-laser-tip-right"></div></div>';
+      return '<div class="maze-laser-wrap maze-laser-wrap-block" style="left:' + rect.x + '%;top:' + rect.y + '%;width:' + rect.width + '%;height:' + rect.height + '%;">' +
+        '<div class="maze-laser-block ' + (isOn ? "maze-laser-block-on" : "maze-laser-block-off") + '">' +
+          '<span class="maze-laser-glow"></span><span class="maze-laser-glow maze-laser-glow-two"></span>' +
+        '</div></div>';
     }).join("");
-    var levelDots = mazeLevels.map(function(item, index) {
-      var cls = index === app.state.fun.mazeLevel ? "maze-level-dot-on " : "";
-      if (index <= app.state.fun.mazeHighest) cls += "maze-level-dot-open";
-      return '<button class="maze-level-dot ' + cls + '" type="button" data-maze-level="' + index + '">' + (index + 1) + '</button>';
-    }).join("");
-    var entrance = levelData.points[0];
-    var computer = levelData.points[levelData.points.length - 1];
+
+    var startPoint = pathPoints[0];
+    var endPoint = pathPoints[pathPoints.length - 1];
+    var point = app.state.fun.mazePoint;
+    var progress = Math.round(app.state.fun.mazeProgress * 100);
 
     app.dom.gameArea.innerHTML = '<div class="game-card">' +
-      h.getCardHeader('<span class="pill">' + levelData.name + '</span><span class="pill">' + levelData.tag + '</span><span class="pill">Maze ' + progress + '%</span>', "backToFun", "⬅ Fun Zone") +
-      h.getMissionStrip("Mouse Maze Escape", "Start at the door. Follow the path to the computer. Higher levels add sleepy lasers.", [{ label: "Reach the computer", done: app.state.fun.mazeComplete }, { label: "Level " + (app.state.fun.mazeLevel + 1) + " / " + mazeLevels.length, done: false }]) +
+      h.getCardHeader('<span class="pill">' + levelData.name + '</span><span class="pill">' + levelData.tag + '</span><span class="pill">' + progress + '%</span>', "backToFun", "⬅ Fun Zone") +
+      h.getMissionStrip("Mouse Maze Escape", "Stay inside the maze path. Wait for red laser blocks to switch off.", [{ label: "Reach the computer", done: app.state.fun.mazeComplete }, { label: "Level " + (app.state.fun.mazeLevel + 1) + " / " + mazeLevels.length, done: false }]) +
       '<div class="arcade-board maze-board">' +
-        '<div class="maze-topbar"><div class="maze-levels">' + levelDots + '</div><div class="maze-helper">' + app.state.fun.mazeMessage + '</div></div>' +
-        '<div class="maze-stage" id="mazeStage">' +
+        '<div class="maze-topbar"><div class="maze-levels">' + levelDots + '</div><div class="maze-helper" id="mazeHelper">' + app.state.fun.mazeMessage + '</div></div>' +
+        '<div class="maze-stage maze-stage-real" id="mazeStage">' +
           '<svg class="maze-svg" viewBox="0 0 100 100" aria-hidden="true">' +
-            '<path class="maze-track" d="' + pathData(levelData.points) + '" />' +
-            '<path class="maze-dash" d="' + pathData(levelData.points) + '" />' +
-            checkpoints +
+            '<rect x="0" y="0" width="100" height="100" rx="8" fill="#1f3861"/>' +
+            '<path class="maze-wall-track" d="' + corridorPath + '" />' +
+            '<path class="maze-floor-track" d="' + corridorPath + '" />' +
+            renderDots(pathPoints) +
           '</svg>' +
-          '<div class="maze-entrance" style="left:' + (entrance.x - 4) + '%;top:' + (entrance.y + 7) + '%;">🚪<span>Start</span></div>' +
-          '<div class="maze-computer-goal" style="left:' + computer.x + '%;top:' + computer.y + '%;">' + computerGoalSvg() + '<span>Computer</span></div>' +
+          '<div class="maze-entrance maze-entrance-real" style="left:' + startPoint.x + '%;top:' + startPoint.y + '%;">🚪<span>Start</span></div>' +
+          '<div class="maze-computer-goal maze-computer-goal-real" style="left:' + endPoint.x + '%;top:' + endPoint.y + '%;">' + computerGoalSvg() + '<span>Computer</span></div>' +
           laserHtml +
-          '<button class="maze-mouse" type="button" id="mazeMouse" style="left:' + app.state.fun.mazePoint.x + '%;top:' + app.state.fun.mazePoint.y + '%;">' +
-            mouseSvg() +
-          '</button>' +
+          '<button class="maze-mouse maze-mouse-real" type="button" id="mazeMouse" style="left:' + point.x + '%;top:' + point.y + '%;">' + mouseSvg() + '</button>' +
         '</div>' +
         '<div class="choice-row maze-actions"><button class="fun-button" type="button" id="mazeResetBtn">Restart Level</button><button class="big-choice output-choice calm-button" type="button" id="mazeNextBtn"' + (app.state.fun.mazeComplete ? "" : " disabled") + '>' + (app.state.fun.mazeLevel === mazeLevels.length - 1 ? "Play Again" : "Next Level") + '</button></div>' +
       '</div>' +
@@ -97,11 +96,17 @@
 
   function bindCommonButtons() {
     var backBtn = document.getElementById("backToFun");
-    if (backBtn) backBtn.addEventListener("click", function() { app.funGames.hub.start(); });
+    if (backBtn) backBtn.addEventListener("click", function () {
+      h.clearFunTimers();
+      app.funGames.hub.start();
+    });
     var resetBtn = document.getElementById("mazeResetBtn");
-    if (resetBtn) resetBtn.addEventListener("click", function() { resetLevel(true); render(); });
+    if (resetBtn) resetBtn.addEventListener("click", function () {
+      resetLevel(true);
+      render();
+    });
     var nextBtn = document.getElementById("mazeNextBtn");
-    if (nextBtn) nextBtn.addEventListener("click", function() {
+    if (nextBtn) nextBtn.addEventListener("click", function () {
       if (!app.state.fun.mazeComplete) return;
       app.state.fun.mazeLevel = app.state.fun.mazeLevel === mazeLevels.length - 1 ? 0 : Math.min(app.state.fun.mazeLevel + 1, mazeLevels.length - 1);
       app.state.fun.mazeHighest = Math.max(app.state.fun.mazeHighest, app.state.fun.mazeLevel);
@@ -111,8 +116,8 @@
     var levelBtns = app.dom.gameArea.querySelectorAll("[data-maze-level]");
     var i;
     for (i = 0; i < levelBtns.length; i++) {
-      (function(btn) {
-        btn.addEventListener("click", function() {
+      (function (btn) {
+        btn.addEventListener("click", function () {
           var nextLevel = Number(btn.dataset.mazeLevel);
           if (nextLevel > app.state.fun.mazeHighest) return;
           app.state.fun.mazeLevel = nextLevel;
@@ -128,92 +133,87 @@
     var stage = document.getElementById("mazeStage");
     if (!mouse || !stage) return;
 
-    mouse.addEventListener("pointerdown", function(event) {
+    mouse.addEventListener("pointerdown", function (event) {
       app.state.fun.mazeDragging = true;
       app.state.fun.mazePointerId = event.pointerId;
       stage.setPointerCapture(event.pointerId);
-      moveMouseFromEvent(event, stage, true);
+      moveFromEvent(event, stage);
     });
-    stage.addEventListener("pointermove", function(event) {
+
+    stage.addEventListener("pointermove", function (event) {
       if (!app.state.fun.mazeDragging) return;
-      moveMouseFromEvent(event, stage, false);
+      moveFromEvent(event, stage);
     });
-    stage.addEventListener("pointerup", stopMazeDrag);
-    stage.addEventListener("pointercancel", stopMazeDrag);
-    stage.addEventListener("pointerleave", function() {
-      if (!app.state.fun.mazeComplete) app.state.fun.mazeMessage = "Keep your mouse on the path.";
-    });
+
+    stage.addEventListener("pointerup", stopDrag);
+    stage.addEventListener("pointercancel", stopDrag);
   }
 
-  function stopMazeDrag(event) {
+  function stopDrag(event) {
     var stage = document.getElementById("mazeStage");
     app.state.fun.mazeDragging = false;
     app.state.fun.mazePointerId = null;
-    if (stage && event && stage.hasPointerCapture && stage.hasPointerCapture(event.pointerId)) stage.releasePointerCapture(event.pointerId);
+    if (stage && event && stage.hasPointerCapture && stage.hasPointerCapture(event.pointerId)) {
+      stage.releasePointerCapture(event.pointerId);
+    }
   }
 
-  function moveMouseFromEvent(event, stage, forceStart) {
+  function moveFromEvent(event, stage) {
     var rect = stage.getBoundingClientRect();
     var x = ((event.clientX - rect.left) / rect.width) * 100;
     var y = ((event.clientY - rect.top) / rect.height) * 100;
-    moveMouse(x, y, forceStart);
+    moveMouseTo(x, y);
   }
 
-  function moveMouse(x, y, forceStart) {
-    var levelData = getLevel();
-    var maxJump = levelData.tag === "Easy" ? 0.12 : levelData.tag === "Medium" ? 0.09 : 0.07;
-    var backtrack = 0.02;
-    var lastAlong = app.state.fun.mazeAlong;
-    var projection = projectOntoPath(levelData.points, x, y, Math.max(0, lastAlong - backtrack), Math.min(1, lastAlong + maxJump));
-    var threshold = levelData.tag === "Easy" ? 9 : levelData.tag === "Medium" ? 7.5 : 6.5;
-    var nextAlong = projection.along;
-    if (forceStart) nextAlong = Math.min(nextAlong, 0.035);
-    if (nextAlong < lastAlong - backtrack) nextAlong = lastAlong - backtrack;
-    if (nextAlong > lastAlong + maxJump) nextAlong = lastAlong + maxJump;
-    var snapped = pointAtAlong(levelData.points, nextAlong);
+  function moveMouseTo(x, y) {
+    var levelData = currentLevel();
+    var pathPoints = buildPathPoints(levelData.cells);
+    var nearest = projectToSegments(pathPoints, x, y);
+    var widthLimit = CORRIDOR / 2 - MOUSE_RADIUS;
 
-    if (projection.distance > threshold) {
-      app.state.fun.mazeMessage = "Move closer to the path.";
-      updateMouseNode();
+    if (nearest.distance > widthLimit || !insideCorridor(pathPoints, x, y)) {
+      app.state.fun.mazeMessage = "Stay inside the path.";
+      updateMazeUi();
       return;
     }
 
-    if (hitLaser(nextAlong)) {
-      app.state.fun.mazeMessage = "Laser on. Wait... now go!";
-      h.showFeedback("Wait for the laser to turn off.", "info");
-      updateMouseNode();
+    if (hitActiveLaser(x, y)) {
+      app.state.fun.mazeMessage = "Laser is on. Wait a moment!";
+      h.showFeedback("Red laser blocks are dangerous!", "error");
+      updateMazeUi();
       return;
     }
 
-    app.state.fun.mazeAlong = nextAlong;
-    app.state.fun.mazeProgress = nextAlong;
-    app.state.fun.mazePoint = {
-      x: app.state.fun.mazePoint.x + (snapped.x - app.state.fun.mazePoint.x) * 0.82,
-      y: app.state.fun.mazePoint.y + (snapped.y - app.state.fun.mazePoint.y) * 0.82
-    };
-    app.state.fun.mazeMessage = nextAlong > 0.96 ? "The computer is right there!" : "Nice and easy.";
-    updateMouseNode();
+    if (nearest.progress + 0.18 < app.state.fun.mazeProgress) {
+      app.state.fun.mazeMessage = "Move forward through the maze.";
+      updateMazeUi();
+      return;
+    }
 
-    if (nextAlong >= 0.995 && !app.state.fun.mazeComplete) {
+    app.state.fun.mazePoint = { x: x, y: y };
+    app.state.fun.mazeLastSafe = { x: x, y: y };
+    app.state.fun.mazeProgress = Math.max(app.state.fun.mazeProgress, nearest.progress);
+    app.state.fun.mazeMessage = app.state.fun.mazeProgress > 0.94 ? "So close to the computer!" : "Nice careful maze work.";
+    updateMazeUi();
+
+    if (distancePoints({ x: x, y: y }, pathPoints[pathPoints.length - 1]) < 5.8 && !app.state.fun.mazeComplete) {
       completeLevel();
     }
   }
 
-  function updateMouseNode() {
-    var node = document.getElementById("mazeMouse");
-    if (node) {
-      node.style.left = app.state.fun.mazePoint.x + "%";
-      node.style.top = app.state.fun.mazePoint.y + "%";
+  function updateMazeUi() {
+    var mouse = document.getElementById("mazeMouse");
+    var helper = document.getElementById("mazeHelper");
+    if (mouse && app.state.fun.mazePoint) {
+      mouse.style.left = app.state.fun.mazePoint.x + "%";
+      mouse.style.top = app.state.fun.mazePoint.y + "%";
     }
-    var helper = document.querySelector(".maze-helper");
     if (helper) helper.textContent = app.state.fun.mazeMessage;
   }
 
   function completeLevel() {
     app.state.fun.mazeComplete = true;
     app.state.fun.mazeProgress = 1;
-    app.state.fun.mazeAlong = 1;
-    app.state.fun.mazeMessage = "You reached the computer!";
     app.state.fun.mazeHighest = Math.min(mazeLevels.length - 1, Math.max(app.state.fun.mazeHighest, app.state.fun.mazeLevel + 1));
     app.processAction('BUMP_STARS', { amount: 5 });
     h.spawnConfetti(34, false);
@@ -222,156 +222,145 @@
   }
 
   function resetLevel(showMessage) {
-    var levelData = getLevel();
-    app.state.fun.mazeAlong = 0;
-    app.state.fun.mazeProgress = 0;
-    app.state.fun.mazeComplete = false;
+    var points = buildPathPoints(currentLevel().cells);
     app.state.fun.mazeDragging = false;
     app.state.fun.mazePointerId = null;
-    app.state.fun.mazePoint = { x: levelData.points[0].x, y: levelData.points[0].y };
-    app.state.fun.mazeStartStamp = Date.now();
-    app.state.fun.mazeMessage = showMessage ? "Level restarted. Start at the door." : "Drag from the door to the computer.";
+    app.state.fun.mazeProgress = 0;
+    app.state.fun.mazeComplete = false;
+    app.state.fun.mazeClockStart = Date.now();
+    app.state.fun.mazePoint = { x: points[0].x, y: points[0].y };
+    app.state.fun.mazeLastSafe = { x: points[0].x, y: points[0].y };
+    app.state.fun.mazeMessage = showMessage ? "Level restarted. Begin at the door." : "Drag the mouse through the maze path.";
   }
 
-  function startLaserClock() {
-    h.addFunTimer(setInterval(function() {
-      if (app.state.fun.mode !== "mouse") return;
-      renderLasersOnly();
-    }, 250), "interval");
-  }
-
-  function renderLasersOnly() {
-    var wraps = app.dom.gameArea.querySelectorAll(".maze-laser");
-    if (!wraps.length) return;
-    var active = getActiveLaserIndexes();
+  function updateLasers() {
+    if (app.state.fun.mode !== "mouse") return;
+    var nodes = app.dom.gameArea.querySelectorAll(".maze-laser-block");
+    if (!nodes.length) return;
+    var active = getActiveLasers();
     var i;
-    for (i = 0; i < wraps.length; i++) {
-      wraps[i].classList.toggle("maze-laser-on", active.indexOf(i) !== -1);
-      wraps[i].classList.toggle("maze-laser-off", active.indexOf(i) === -1);
+    for (i = 0; i < nodes.length; i++) {
+      nodes[i].classList.toggle("maze-laser-block-on", active.indexOf(i) !== -1);
+      nodes[i].classList.toggle("maze-laser-block-off", active.indexOf(i) === -1);
     }
   }
 
-  function getActiveLaserIndexes() {
-    var levelData = getLevel();
-    var elapsed = (Date.now() - app.state.fun.mazeStartStamp) / 1000;
+  function getActiveLasers() {
+    var lasers = currentLevel().lasers;
+    var elapsed = (Date.now() - app.state.fun.mazeClockStart) / 1000;
     var active = [];
     var i;
-    for (i = 0; i < levelData.lasers.length; i++) {
-      if ((elapsed % levelData.lasers[i].cycleSeconds) < levelData.lasers[i].onSeconds) active.push(i);
+    for (i = 0; i < lasers.length; i++) {
+      if ((elapsed % lasers[i].cycle) < lasers[i].on) active.push(i);
     }
     return active;
   }
 
-  function hitLaser(along) {
-    var levelData = getLevel();
-    var active = getActiveLaserIndexes();
+  function hitActiveLaser(x, y) {
+    var active = getActiveLasers();
+    var levelData = currentLevel();
     var i;
     for (i = 0; i < active.length; i++) {
-      var item = levelData.lasers[active[i]];
-      var mark = segmentStartRatio(levelData.points, item.segmentIndex) + segmentRatio(levelData.points, item.segmentIndex) / 2;
-      if (Math.abs(along - mark) < 0.04) return true;
+      if (pointInsideRect({ x: x, y: y }, laserRect(levelData, levelData.lasers[active[i]]), 1.2)) return true;
     }
     return false;
   }
 
-  function getLevel() {
+  function currentLevel() {
     return mazeLevels[app.state.fun.mazeLevel || 0];
   }
 
-  function pathData(points) {
-    var i;
+  function buildPathPoints(cells) {
+    return cells.map(function (cell) {
+      return {
+        x: 10 + cell[0] * CELL,
+        y: 10 + cell[1] * CELL
+      };
+    });
+  }
+
+  function svgPath(points) {
     var text = "M " + points[0].x + " " + points[0].y;
+    var i;
     for (i = 1; i < points.length; i++) text += " L " + points[i].x + " " + points[i].y;
     return text;
   }
 
-  function getSegment(points, index) {
-    return { a: points[index], b: points[index + 1] };
+  function renderDots(points) {
+    return points.map(function (point, index) {
+      return '<circle class="maze-checkpoint ' + (app.state.fun.mazeProgress >= index / (points.length - 1) ? "maze-checkpoint-on" : "") + '" cx="' + point.x + '" cy="' + point.y + '" r="' + (index === 0 || index === points.length - 1 ? 3.9 : 2.5) + '" />';
+    }).join("");
   }
 
-  function projectOntoPath(points, x, y, minAlong, maxAlong) {
-    var total = totalLength(points);
-    var best = { distance: Infinity, along: clamp(typeof minAlong === "number" ? minAlong : 0, 0, 1) };
-    var walked = 0;
+  function insideCorridor(points, x, y) {
     var i;
     for (i = 0; i < points.length - 1; i++) {
-      var segment = getSegment(points, i);
-      var segmentStart = walked / total;
-      var segmentEnd = (walked + distance(segment.a, segment.b)) / total;
-      if (typeof minAlong === "number" && segmentEnd < minAlong) {
-        walked += distance(segment.a, segment.b);
-        continue;
+      if (distanceToSegment({ x: x, y: y }, points[i], points[i + 1]).distance <= (CORRIDOR / 2 - MOUSE_RADIUS)) return true;
+    }
+    return distancePoints({ x: x, y: y }, points[0]) <= (CORRIDOR / 2) || distancePoints({ x: x, y: y }, points[points.length - 1]) <= (CORRIDOR / 2);
+  }
+
+  function projectToSegments(points, x, y) {
+    var total = totalLength(points);
+    var walked = 0;
+    var best = { distance: Infinity, progress: 0 };
+    var i;
+    for (i = 0; i < points.length - 1; i++) {
+      var info = distanceToSegment({ x: x, y: y }, points[i], points[i + 1]);
+      var segmentLength = distancePoints(points[i], points[i + 1]);
+      var progress = (walked + segmentLength * info.t) / total;
+      if (info.distance < best.distance) {
+        best = { distance: info.distance, progress: progress };
       }
-      if (typeof maxAlong === "number" && segmentStart > maxAlong) break;
-      var dx = segment.b.x - segment.a.x;
-      var dy = segment.b.y - segment.a.y;
-      var lengthSq = dx * dx + dy * dy;
-      var t = lengthSq ? clamp(((x - segment.a.x) * dx + (y - segment.a.y) * dy) / lengthSq, 0, 1) : 0;
-      var px = segment.a.x + dx * t;
-      var py = segment.a.y + dy * t;
-      var dist = distance({ x: x, y: y }, { x: px, y: py });
-      var along = (walked + Math.sqrt(lengthSq) * t) / total;
-      if (typeof minAlong === "number" && along < minAlong) {
-        walked += Math.sqrt(lengthSq);
-        continue;
-      }
-      if (typeof maxAlong === "number" && along > maxAlong) {
-        walked += Math.sqrt(lengthSq);
-        continue;
-      }
-      if (dist < best.distance) {
-        best.distance = dist;
-        best.along = along;
-      }
-      walked += Math.sqrt(lengthSq);
+      walked += segmentLength;
     }
     return best;
-  }
-
-  function pointAtAlong(points, along) {
-    var total = totalLength(points);
-    var target = total * along;
-    var walked = 0;
-    var i;
-    for (i = 0; i < points.length - 1; i++) {
-      var segment = getSegment(points, i);
-      var segLength = distance(segment.a, segment.b);
-      if (walked + segLength >= target) {
-        var t = segLength ? (target - walked) / segLength : 0;
-        return { x: segment.a.x + (segment.b.x - segment.a.x) * t, y: segment.a.y + (segment.b.y - segment.a.y) * t };
-      }
-      walked += segLength;
-    }
-    return { x: points[points.length - 1].x, y: points[points.length - 1].y };
-  }
-
-  function segmentStartRatio(points, index) {
-    var walked = 0;
-    var total = totalLength(points);
-    var i;
-    for (i = 0; i < index; i++) walked += distance(points[i], points[i + 1]);
-    return walked / total;
-  }
-
-  function segmentRatio(points, index) {
-    return distance(points[index], points[index + 1]) / totalLength(points);
   }
 
   function totalLength(points) {
     var total = 0;
     var i;
-    for (i = 0; i < points.length - 1; i++) total += distance(points[i], points[i + 1]);
+    for (i = 0; i < points.length - 1; i++) total += distancePoints(points[i], points[i + 1]);
     return total;
   }
 
-  function distance(a, b) {
+  function distanceToSegment(point, a, b) {
+    var dx = b.x - a.x;
+    var dy = b.y - a.y;
+    var lenSq = dx * dx + dy * dy;
+    var t = lenSq ? ((point.x - a.x) * dx + (point.y - a.y) * dy) / lenSq : 0;
+    t = Math.max(0, Math.min(1, t));
+    var px = a.x + dx * t;
+    var py = a.y + dy * t;
+    return { distance: distancePoints(point, { x: px, y: py }), t: t };
+  }
+
+  function distancePoints(a, b) {
     var dx = a.x - b.x;
     var dy = a.y - b.y;
     return Math.sqrt(dx * dx + dy * dy);
   }
 
-  function clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
+  function laserRect(levelData, laser) {
+    var points = buildPathPoints(levelData.cells);
+    var a = points[laser.segment];
+    var b = points[laser.segment + 1];
+    var horizontal = Math.abs(a.y - b.y) < 0.01;
+    var startX = a.x + (b.x - a.x) * laser.from;
+    var endX = a.x + (b.x - a.x) * laser.to;
+    var startY = a.y + (b.y - a.y) * laser.from;
+    var endY = a.y + (b.y - a.y) * laser.to;
+    return horizontal
+      ? { x: Math.min(startX, endX), y: a.y - CORRIDOR / 2, width: Math.abs(endX - startX), height: CORRIDOR }
+      : { x: a.x - CORRIDOR / 2, y: Math.min(startY, endY), width: CORRIDOR, height: Math.abs(endY - startY) };
+  }
+
+  function pointInsideRect(point, rect, inset) {
+    var pad = inset || 0;
+    return point.x >= rect.x + pad &&
+      point.x <= rect.x + rect.width - pad &&
+      point.y >= rect.y + pad &&
+      point.y <= rect.y + rect.height - pad;
   }
 
   function mouseSvg() {

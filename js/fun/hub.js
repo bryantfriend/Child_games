@@ -7,7 +7,7 @@
     { id: "keyboard", emoji: "⌨️", title: "Typing Race!", text: "See the falling letter. Tap the same key." },
     { id: "fix", emoji: "🖥️", title: "Boot-Up Sequence", text: "Tap at the right time to start the computer." },
     { id: "screen", emoji: "📺", title: "Screen Paint Splash!", text: "Draw with bright colors on the happy screen." },
-    { id: "power", emoji: "🔌", title: "Plug It In!", text: "Drag each cable to the right computer port." },
+    { id: "shooter", emoji: "🚀", title: "Virus Shooter", text: "Fly a spaceship and blast computer viruses." },
     { id: "road", emoji: "🛣️", title: "Techy Road", text: "Pick a hero and cross past tech obstacles." },
   ];
 
@@ -38,7 +38,7 @@
            else if (id === "keyboard") app.funGames.keyboard.start();
            else if (id === "fix") app.funGames.fix.start();
            else if (id === "screen") app.funGames.screen.start();
-           else if (id === "power") app.funGames.power.start();
+           else if (id === "shooter") app.funGames.shooter.start();
            else if (id === "road") app.funGames.road.start();
          });
        })(btns[i]);

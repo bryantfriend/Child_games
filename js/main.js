@@ -1,12 +1,26 @@
 (function () {
   var app = window.ICTApp = window.ICTApp || {};
   var h = app.helpers;
+  var bootStarted = false;
+
+  function hasUnlockedGamesMenu() {
+    var done = app.state.completed || [];
+    var lesson1Done = ["build", "input", "output", "challenge"].every(function(id) {
+      return done.indexOf(id) !== -1;
+    });
+    var lesson2Done = done.indexOf("onoff") !== -1;
+    return lesson1Done || lesson2Done;
+  }
 
   function openGame(type, options) {
     var opts = options || {};
     if (!app.state.checkIn.ready) {
       if (app.checkin && app.checkin.renderWelcome) app.checkin.renderWelcome();
       h.showFeedback("Pick a face first.", "info");
+      return;
+    }
+    if (type === "fun" && !hasUnlockedGamesMenu()) {
+      h.showFeedback("Finish a lesson first to open Games.", "info");
       return;
     }
     if (type === "fun" && app.state.stars < 100 && !app.state.freePlay && !opts.forceGames) {
@@ -41,13 +55,21 @@
     document.getElementById("game-overlay").style.display = "flex";
     if (app.dom.panelTitle) app.dom.panelTitle.textContent = "Pick Your Adventure";
     if (app.dom.panelSubtitle) app.dom.panelSubtitle.textContent = "Choose Lesson 1, Lesson 2, or jump into the games.";
+      var gamesUnlocked = hasUnlockedGamesMenu();
       var gamesCard = app.data.lessonMenu.filter(function(item) {
         return item.id === "games";
       }).map(function(item) {
-        return '<button class="lesson-menu-card lesson-menu-card-games" type="button" data-menu-choice="' + item.id + '">' +
-          '<span class="lesson-menu-emoji">' + item.emoji + '</span>' +
+        if (gamesUnlocked) {
+          return '<button class="lesson-menu-card lesson-menu-card-games" type="button" data-menu-choice="' + item.id + '">' +
+            '<span class="lesson-menu-emoji">' + item.emoji + '</span>' +
+            '<strong>' + item.title + '</strong>' +
+            '<span>' + item.subtitle + '</span>' +
+            '</button>';
+        }
+        return '<button class="lesson-menu-card lesson-menu-card-games lesson-menu-card-locked" type="button" disabled aria-disabled="true">' +
+          '<span class="lesson-menu-emoji">🔒</span>' +
           '<strong>' + item.title + '</strong>' +
-          '<span>' + item.subtitle + '</span>' +
+          '<span>Finish one lesson first</span>' +
           '</button>';
       }).join("");
       var units = app.data.unitMenu.map(function(unit) {
@@ -92,6 +114,10 @@
           if (choice === "lesson1") showLessonMap();
           else if (choice === "lesson2") openGame("onoff");
           else if (choice === "games") {
+            if (!hasUnlockedGamesMenu()) {
+              h.showFeedback("Finish a lesson first to open Games.", "info");
+              return;
+            }
             app.processAction('SET_FREE_PLAY', { value: true });
             openGame("fun", { forceGames: true });
           }
@@ -104,6 +130,65 @@
     app.processAction('SET_GAME', { id: null });
     document.getElementById("game-overlay").style.display = "none";
     h.showFeedback("Pick an island for Lesson 1!", "success");
+  }
+
+  function setLoadingMessage(text) {
+    var label = document.getElementById("appLoadingText");
+    if (label) label.textContent = text;
+  }
+
+  function preloadImage(src) {
+    return new Promise(function(resolve) {
+      var img = new Image();
+      var done = function() { resolve(); };
+      img.onload = done;
+      img.onerror = done;
+      img.src = src;
+    });
+  }
+
+  function preloadVideo(src) {
+    return new Promise(function(resolve) {
+      var video = document.createElement("video");
+      var finished = false;
+      var done = function() {
+        if (finished) return;
+        finished = true;
+        resolve();
+      };
+      video.preload = "metadata";
+      video.muted = true;
+      video.addEventListener("loadedmetadata", done, { once: true });
+      video.addEventListener("canplay", done, { once: true });
+      video.addEventListener("error", done, { once: true });
+      setTimeout(done, 5000);
+      video.src = src;
+    });
+  }
+
+  function finishBoot() {
+    document.body.classList.remove("app-loading");
+    if (app.checkin && app.checkin.renderWelcome) app.checkin.renderWelcome();
+    h.updateScoreboard();
+    h.updateRenderHooks();
+  }
+
+  function startBoot() {
+    if (bootStarted) return;
+    bootStarted = true;
+    setLoadingMessage("Loading the map and welcome video...");
+    Promise.all([
+      preloadImage("map-bg.png"),
+      preloadImage("assets/logo.png"),
+      preloadImage("assets/computer.svg"),
+      preloadImage("assets/monitor.svg"),
+      preloadImage("assets/keyboard.svg"),
+      preloadImage("assets/mouse.svg"),
+      preloadVideo("assets/ICT_Video_Revision_for_nd_Graders.mp4")
+    ]).then(function() {
+      setLoadingMessage("Ready to start!");
+      setTimeout(finishBoot, 250);
+    });
   }
 
   function triggerSilly(button) {
@@ -140,7 +225,5 @@
   var menuHomeBtn = document.getElementById("menuHomeBtn");
   if (menuHomeBtn) menuHomeBtn.addEventListener("click", renderMainMenu);
 
-  if (app.checkin && app.checkin.renderWelcome) app.checkin.renderWelcome();
-  h.updateScoreboard();
-  h.updateRenderHooks();
+  startBoot();
 })();

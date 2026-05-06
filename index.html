@@ -5,11 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>🌴 ICT Adventure Island</title>
   <meta name="description" content="A fun and educational touch-based web app game where students explore ICT parts.">
+  <meta name="app-version" content="1.0.1">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="app-loading">
 
   <div id="game-container">
+    <div id="appLoadingScreen" class="app-loading-screen" aria-live="polite">
+      <div class="app-loading-card">
+        <div class="app-loading-stars" aria-hidden="true">
+          <span>⭐</span><span>💻</span><span>🌈</span>
+        </div>
+        <div class="app-loading-spinner" aria-hidden="true"></div>
+        <h2>Loading Your Adventure</h2>
+        <p id="appLoadingText">Getting the lesson ready for you...</p>
+      </div>
+    </div>
     <div id="confettiLayer"></div>
     <div id="feedbackBanner" class="feedback-banner"></div>
 
@@ -108,11 +119,11 @@
   <script src="js/checkin.js"></script>
   
   <!-- Lessons -->
-  <script src="js/lessons/build.js"></script>
-  <script src="js/lessons/input.js"></script>
-  <script src="js/lessons/output.js"></script>
-  <script src="js/lessons/challenge.js"></script>
-  <script src="js/lessons/onoff.js"></script>
+  <script src="js/lessons/lesson-01-ict-adventure-island/build.js"></script>
+  <script src="js/lessons/lesson-01-ict-adventure-island/input.js"></script>
+  <script src="js/lessons/lesson-01-ict-adventure-island/output.js"></script>
+  <script src="js/lessons/lesson-01-ict-adventure-island/challenge.js"></script>
+  <script src="js/lessons/lesson-02-turning-a-computer-on-off/onoff.js"></script>
   
   <!-- Fun Zone -->
   <script src="js/fun/hub.js"></script>
@@ -120,7 +131,7 @@
   <script src="js/fun/keyboard-smash.js"></script>
   <script src="js/fun/fix-computer.js"></script>
   <script src="js/fun/screen-defender.js"></script>
-  <script src="js/fun/power-up.js"></script>
+  <script src="js/fun/virus-shooter.js"></script>
   <script src="js/fun/road-runner.js"></script>
   
   <script src="js/main.js"></script>

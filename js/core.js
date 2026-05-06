@@ -1,5 +1,6 @@
 (function () {
   var app = window.ICTApp = window.ICTApp || {};
+  app.version = "1.0.1";
 
   app.state = {
     stars: 0,
@@ -66,18 +67,26 @@
     oscillator.connect(gain);
     gain.connect(context.destination);
     var now = context.currentTime;
-    var notes = { success: [660, 880], error: [220, 180], info: [520, 620] };
+    var notes = { 
+      success: [660, 880, 1100], 
+      error: [220, 180, 140], 
+      info: [523, 659],
+      tap: [440, 554],
+      plug: [349, 440, 523],
+      tick: [880],
+      complete: [523, 659, 783, 1046]
+    };
     var freqList = notes[tone] || notes.info;
     var i;
     for (i = 0; i < freqList.length; i++) {
        oscillator.frequency.setValueAtTime(freqList[i], now + i * 0.08);
     }
-    oscillator.type = tone === "error" ? "square" : "triangle";
+    oscillator.type = tone === "error" ? "square" : "sine";
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.exponentialRampToValueAtTime(0.08, now + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+    gain.gain.exponentialRampToValueAtTime(0.05, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + (tone === "complete" ? 0.6 : 0.3));
     oscillator.start(now);
-    oscillator.stop(now + 0.3);
+    oscillator.stop(now + (tone === "complete" ? 0.6 : 0.3));
   }
 
   function spawnConfetti(count, bigBurst) {
@@ -151,26 +160,52 @@
 
   function updateRenderHooks() {
     window.render_game_to_text = function() {
-      return JSON.stringify({
-        mode: app.state.currentGame || "menu",
-        stars: app.state.stars,
-        completed: app.state.completed.slice(),
-        freePlay: app.state.freePlay,
-        checkIn: app.state.checkIn,
-        onoff: {
-          view: app.state.onoff.view || "map",
-          module: app.state.onoff.module || null,
-          moduleDone: app.state.onoff.moduleDone || {},
-          mission: app.state.onoff.mission || 0,
-          wakeHits: (app.state.onoff.wakeHits || []).slice(),
-          stepOrder: (app.state.onoff.stepOrder || []).slice(),
-          holdPhase: app.state.onoff.holdPhase || null,
-          holdValue: app.state.onoff.holdValue || 0,
-          scenarioIndex: app.state.onoff.scenarioIndex || 0,
-          routineIndex: app.state.onoff.routineIndex || 0,
-          routineLives: app.state.onoff.routineLives || 0
-        }
-      });
+      var state = app.state;
+      var out = {
+        mode: state.currentGame || "menu",
+        stars: state.stars,
+        completed: (state.completed || []).slice(),
+        freePlay: state.freePlay,
+        checkIn: Object.assign({}, state.checkIn),
+        onoff: Object.assign({}, state.onoff),
+        build: state.build ? { 
+          mission: state.build.mission, 
+          placed: Object.assign({}, state.build.placed),
+          matched: (state.build.matched || []).slice(),
+          promptIndex: state.build.promptIndex,
+          traceTemplate: state.build.traceTemplate,
+          traceComplete: Object.assign({}, state.build.traceComplete)
+        } : null,
+        input: state.input ? {
+          mission: state.input.mission,
+          scenarioIndex: state.input.scenarioIndex,
+          rushIndex: state.input.rushIndex,
+          rushScore: state.input.rushScore
+        } : null,
+        output: state.output ? {
+          mission: state.output.mission,
+          questionIndex: state.output.questionIndex,
+          scenarioIndex: state.output.scenarioIndex,
+          badges: state.output.badges
+        } : null,
+        challenge: state.challenge ? {
+          round: state.challenge.round,
+          lives: state.challenge.lives,
+          streak: state.challenge.streak,
+          best: state.challenge.best
+        } : null,
+        fun: state.fun ? {
+          mode: state.fun.mode,
+          scenarios: (state.fun.scenarios || []).length,
+          score: state.fun.score || 0
+        } : null
+      };
+
+      // Add deep clone for onoff wakeHits/stepOrder since they are arrays
+      if (out.onoff.wakeHits) out.onoff.wakeHits = out.onoff.wakeHits.slice();
+      if (out.onoff.stepOrder) out.onoff.stepOrder = out.onoff.stepOrder.slice();
+
+      return JSON.stringify(out);
     };
     window.advanceTime = function(ms) { return ms; };
   }
@@ -229,6 +264,9 @@
       case 'SET_FREE_PLAY':
         newState.freePlay = Boolean(rawAction.payload.value);
         break;
+      case 'UPDATE_ONOFF':
+        newState.onoff = Object.assign({}, newState.onoff, rawAction.payload);
+        break;
     }
 
     // 6. Finalize
@@ -253,6 +291,10 @@
     clearFunTimers: clearFunTimers,
     addFunTimer: addFunTimer,
     updateRenderHooks: updateRenderHooks,
+    bindMany: function(selector, callback) {
+      var nodes = document.querySelectorAll(selector);
+      for (var i = 0; i < nodes.length; i++) callback(nodes[i]);
+    },
     getCardHeader: function(extra, backId, label) {
        var bid = backId || "backToMap";
        var blbl = label || "⬅ Map";

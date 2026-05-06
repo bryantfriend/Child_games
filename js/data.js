@@ -258,64 +258,75 @@
       { id: "stretch", title: "Stretch up high", emoji: "👐", text: "Reach your hands up to the sky.", helper: "Stretch your arms. Make your body long." },
       { id: "shake", title: "Shake it out", emoji: "✨", text: "Small shake. Let the grumpy feelings go.", helper: "Shake your hands and shoulders." },
     ],
-    onoffWakeTargets: [
-      { id: "plug", label: "Plug In", emoji: "🔌", hint: "Power first." },
-      { id: "button", label: "Power Button", emoji: "🔘", hint: "Press to wake." },
-      { id: "screen", label: "Screen On", emoji: "💡", hint: "Now we can see." }
+    level1Devices: [
+      { id: "monitor", label: "Monitor", buttonType: "circle", hotspot: {x:"70%", y:"85%"}, fakeSpots: [{x:"20%", y:"85%"}, {x:"50%", y:"20%"}] },
+      { id: "desktop", label: "PC Tower", buttonType: "square", hotspot: {x:"50%", y:"20%"}, fakeSpots: [{x:"50%", y:"50%"}, {x:"20%", y:"80%"}] },
+      { id: "laptop", label: "Laptop", buttonType: "pill", hotspot: {x:"85%", y:"15%"}, fakeSpots: [{x:"10%", y:"15%"}, {x:"50%", y:"90%"}] },
+      { id: "tablet", label: "Tablet", buttonType: "edge", hotspot: {x:"95%", y:"10%"}, fakeSpots: [{x:"50%", y:"90%"}, {x:"5%", y:"50%"}] },
+      { id: "server", label: "Server Rack", buttonType: "rect", hotspot: {x:"80%", y:"30%"}, fakeSpots: [{x:"20%", y:"30%"}, {x:"50%", y:"70%"}] },
+      { id: "printer", label: "Office Printer", buttonType: "circle", hotspot: {x:"85%", y:"20%"}, fakeSpots: [{x:"15%", y:"80%"}, {x:"50%", y:"50%"}] },
+      { id: "router", label: "Wi-Fi Router", buttonType: "switch", hotspot: {x:"10%", y:"90%"}, fakeSpots: [{x:"50%", y:"10%"}, {x:"90%", y:"10%"}] },
+      { id: "speakers", label: "Sound System", buttonType: "dial", hotspot: {x:"50%", y:"80%"}, fakeSpots: [{x:"50%", y:"20%"}, {x:"20%", y:"50%"}] },
+      { id: "keyboard", label: "Glow Keyboard", buttonType: "key", hotspot: {x:"95%", y:"5%"}, fakeSpots: [{x:"10%", y:"95%"}, {x:"50%", y:"50%"}] },
+      { id: "mouse", label: "Gaming Mouse", buttonType: "side", hotspot: {x:"5%", y:"50%"}, fakeSpots: [{x:"95%", y:"50%"}, {x:"50%", y:"10%"}] },
+      { id: "projector", label: "Video Projector", buttonType: "top", hotspot: {x:"50%", y:"5%"}, fakeSpots: [{x:"50%", y:"95%"}, {x:"10%", y:"50%"}] },
+      { id: "scanner", label: "Flat Scanner", buttonType: "front", hotspot: {x:"90%", y:"80%"}, fakeSpots: [{x:"10%", y:"80%"}, {x:"50%", y:"20%"}] },
+      { id: "tv", label: "Smart TV", buttonType: "corner", hotspot: {x:"2%", y:"98%"}, fakeSpots: [{x:"98%", y:"2%"}, {x:"50%", y:"50%"}] },
+      { id: "gamepad", label: "Game Controller", buttonType: "center", hotspot: {x:"50%", y:"40%"}, fakeSpots: [{x:"10%", y:"10%"}, {x:"90%", y:"90%"}] },
+      { id: "webcam", label: "Web Camera", buttonType: "rear", hotspot: {x:"50%", y:"90%"}, fakeSpots: [{x:"50%", y:"10%"}, {x:"10%", y:"50%"}] }
     ],
-    onoffSteps: [
-      { id: "plug", label: "Plug in", emoji: "🔌" },
-      { id: "press", label: "Press power", emoji: "🔘" },
-      { id: "wait", label: "Wait", emoji: "⏳" },
-      { id: "login", label: "Log in", emoji: "🙂" },
-      { id: "work", label: "Start work", emoji: "🖥️" }
+    level2Operations: [
+      { id: "op1", action: "tap", text: "Tap the button once!" },
+      { id: "op2", action: "hold", text: "Hold the button for 3 seconds!" },
+      { id: "op3", action: "tap", text: "Quick tap to wake!" },
+      { id: "op4", action: "hold", text: "Long press for power!" },
+      { id: "op5", action: "tap", text: "Tap to turn on lights!" },
+      { id: "op6", action: "hold", text: "Hold until it beeps!" },
+      { id: "op7", action: "tap", text: "Single click to start!" },
+      { id: "op8", action: "hold", text: "Keep holding for bios!" },
+      { id: "op9", action: "tap", text: "Touch the sensor!" },
+      { id: "op10", action: "hold", text: "Firm hold to boot!" }
     ],
-    onoffWakeChecks: [
-      { text: "The screen lights up. Tap SCREEN ON.", answer: "screen", options: [{ id: "screen", label: "Screen On", emoji: "💡" }, { id: "off", label: "Still Off", emoji: "🌙" }, { id: "sleep", label: "Sleep", emoji: "😴" }] },
-      { text: "Now the child needs to get in. Tap LOG IN.", answer: "login", options: [{ id: "restart", label: "Restart", emoji: "🔄" }, { id: "login", label: "Log In", emoji: "🙂" }, { id: "run", label: "Run Away", emoji: "🏃" }] },
-      { text: "The computer is ready. Tap START WORK.", answer: "work", options: [{ id: "work", label: "Start Work", emoji: "🖥️" }, { id: "turn_off", label: "Turn Off", emoji: "⏻" }, { id: "dance", label: "Dance", emoji: "💃" }] },
-      { text: "One last check. Tap WAIT while the computer gets ready.", answer: "wait", options: [{ id: "wait", label: "Wait", emoji: "⏳" }, { id: "smash", label: "Smash Keys", emoji: "⌨️" }, { id: "sleep", label: "Sleep", emoji: "😴" }] }
+    level3BootTimers: [
+      { id: "boot1", label: "Quick Phone", waitTime: 2000, hint: "Starting fast..." },
+      { id: "boot2", label: "School Laptop", waitTime: 4000, hint: "Checking files..." },
+      { id: "boot3", label: "Office PC", waitTime: 6000, hint: "Loading Windows..." },
+      { id: "boot4", label: "Old Desktop", waitTime: 8000, hint: "Spinning disks..." },
+      { id: "boot5", label: "Game Console", waitTime: 5000, hint: "Syncing profile..." },
+      { id: "boot6", label: "Server Node", waitTime: 7000, hint: "Network boot..." },
+      { id: "boot7", label: "Tablet Air", waitTime: 3000, hint: "Waking up..." },
+      { id: "boot8", label: "Studio Mac", waitTime: 4500, hint: "Finalizing..." },
+      { id: "boot9", label: "Kitchen Tablet", waitTime: 2500, hint: "Chef mode..." },
+      { id: "boot10", label: "Mainframe", waitTime: 10000, hint: "System check..." }
     ],
-    onoffStepChecks: [
-      { text: "What comes first?", answer: "plug", options: ["plug", "work", "login"] },
-      { text: "What comes after plug in?", answer: "press", options: ["wait", "press", "turn_off"] },
-      { text: "After press power, what next?", answer: "wait", options: ["wait", "work", "sleep"] },
-      { text: "When the computer wakes up, what next?", answer: "login", options: ["login", "turn_off", "plug"] },
-      { text: "What is the last step?", answer: "work", options: ["restart", "work", "wait"] }
+    level4Logins: [
+      { id: "log1", target: "Student", fakes: ["Teacher", "Guest", "Admin"] },
+      { id: "log2", target: "Class 2B", fakes: ["Class 3A", "Class 1C", "Office"] },
+      { id: "log3", target: "Me", fakes: ["Robot", "Cat", "Dinosaur"] },
+      { id: "log4", target: "Blue Team", fakes: ["Red Team", "Green Team", "Yellow Team"] },
+      { id: "log5", target: "Junior Player", fakes: ["Senior Pro", "Spectator", "Judge"] },
+      { id: "log6", target: "Safe User", fakes: ["Risk User", "Unknown", "Stranger"] },
+      { id: "log7", target: "Ox-Learner", fakes: ["Camb-Learner", "Stan-Learner", "Harv-Learner"] },
+      { id: "log8", target: "Primary-1", fakes: ["Secondary-2", "University", "Nursery"] },
+      { id: "log9", target: "I.C.T. Kid", fakes: ["Math Kid", "Art Kid", "Music Kid"] },
+      { id: "log10", target: "The Winner", fakes: ["The Loser", "The Waiter", "The Thinker"] }
     ],
-    onoffScenarios: [
-      { text: "You want to start computer class.", answer: "turn_on", options: [{ id: "turn_on", label: "Turn On", emoji: "🔘" }, { id: "sleep", label: "Sleep", emoji: "😴" }, { id: "restart", label: "Restart", emoji: "🔄" }] },
-      { text: "You finished your drawing. What first?", answer: "save_first", options: [{ id: "save_first", label: "Save", emoji: "💾" }, { id: "turn_off", label: "Turn Off", emoji: "⏻" }, { id: "run", label: "Run Away", emoji: "🏃" }] },
-      { text: "Time to go home.", answer: "turn_off", options: [{ id: "turn_off", label: "Turn Off", emoji: "⏻" }, { id: "turn_on", label: "Turn On", emoji: "🔘" }, { id: "dance", label: "Dance", emoji: "💃" }] },
-      { text: "Computer is stuck. Try this.", answer: "restart", options: [{ id: "restart", label: "Restart", emoji: "🔄" }, { id: "sleep", label: "Sleep", emoji: "😴" }, { id: "save_first", label: "Save", emoji: "💾" }] },
-      { text: "Short break. Come back soon.", answer: "sleep", options: [{ id: "sleep", label: "Sleep", emoji: "😴" }, { id: "turn_off", label: "Turn Off", emoji: "⏻" }, { id: "restart", label: "Restart", emoji: "🔄" }] },
-      { text: "Work is open. Do this before off.", answer: "save_first", options: [{ id: "restart", label: "Restart", emoji: "🔄" }, { id: "save_first", label: "Save", emoji: "💾" }, { id: "turn_off", label: "Turn Off", emoji: "⏻" }] }
+    level5Shutdowns: [
+      { text: "School is finished! Let's shut down.", steps: ["start", "power", "shutdown"] },
+      { text: "Going to the park! Turn it off.", steps: ["start", "power", "shutdown"] },
+      { text: "Dinner time! Goodnight PC.", steps: ["start", "power", "shutdown"] },
+      { text: "Battery is low! End session.", steps: ["start", "power", "shutdown"] },
+      { text: "Teacher says freeze! Off now.", steps: ["start", "power", "shutdown"] },
+      { text: "Recess time! Safely off.", steps: ["start", "power", "shutdown"] },
+      { text: "Class is changing room.", steps: ["start", "power", "shutdown"] },
+      { text: "Bus is here! Quick shutdown.", steps: ["start", "power", "shutdown"] },
+      { text: "Finished my homework! Bye.", steps: ["start", "power", "shutdown"] },
+      { text: "Cleaning the desk! Proper off.", steps: ["start", "power", "shutdown"] }
     ],
-    onoffRoutineRounds: [
-      { text: "The computer is dark. What now?", answer: "turn_on" },
-      { text: "You pressed power. Next?", answer: "wait" },
-      { text: "Your game is open. Before off?", answer: "save_first" },
-      { text: "Class is over.", answer: "turn_off" },
-      { text: "Quick break only.", answer: "sleep" },
-      { text: "Computer froze.", answer: "restart" },
-      { text: "Screen wakes up. Now?", answer: "login" },
-      { text: "You want to use the computer.", answer: "turn_on" },
-      { text: "Work is done and saved.", answer: "turn_off" },
-      { text: "Power light is on. Be patient.", answer: "wait" },
-      { text: "You are back from lunch fast. Best choice?", answer: "sleep" },
-      { text: "The class wants to begin computer time.", answer: "turn_on" },
-      { text: "The screen shows your file. Before shutting down?", answer: "save_first" },
-      { text: "Everything is frozen and will not move.", answer: "restart" },
-      { text: "The login page is on the screen. What now?", answer: "login" }
-    ],
-    onoffRoutineChoices: [
-      { id: "turn_on", label: "Turn On", emoji: "🔘" },
-      { id: "wait", label: "Wait", emoji: "⏳" },
-      { id: "save_first", label: "Save", emoji: "💾" },
-      { id: "turn_off", label: "Turn Off", emoji: "⏻" },
-      { id: "sleep", label: "Sleep", emoji: "😴" },
-      { id: "restart", label: "Restart", emoji: "🔄" },
-      { id: "login", label: "Log In", emoji: "🙂" }
+    level6Boss: [
+      { id: "boss1", label: "Classroom Desktop", type: "pc" },
+      { id: "boss2", label: "My Personal Tablet", type: "tablet" },
+      { id: "boss3", label: "The Library Laptop", type: "laptop" }
     ],
     sillyMessages: ["Boing! Silly tap!", "Splash! A funny fish!", "Twinkle! A happy star!", "Wiggle wiggle!", "Haha! Try the game too!"],
     confettiColors: ["#ff5d8f", "#ffd84f", "#4cc9f0", "#2ec27e", "#ff8e3c", "#a78bfa"],
